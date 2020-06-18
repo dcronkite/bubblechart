@@ -53,9 +53,10 @@
     </style>
 </head>
 <body>
+<h2 id="greeting">Logging in...</h2>
 <ul id="messages"></ul>
 
-<form id="chatForm" action="">
+<form id="chatForm" action="#">
     <input id="chatInput" autocomplete="off"/>
     <button onclick="sendMessage()">Send</button>
 </form>
@@ -64,6 +65,23 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"
         crossorigin="anonymous"></script>
 <script type="text/javascript" charset="utf-8">
+    let baseURL = 'http://127.0.0.1:8090'
+    const chatInput = document.getElementById('chatInput');
+    let username = null;
+    fetch(`${baseURL}/login`, {
+        method: 'POST',
+        body: JSON.stringify({
+            username: 'admin',
+            password: 'admin',
+        }),
+    }).then((response) => {
+        return response.json();
+    }).then((json) => {
+        console.log(json);
+        username = json['username'];
+        document.getElementById('greeting').innerText = `${username}'s Chat Session`;
+    })
+
     function addMessage(text) {
         const messages = document.getElementById('messages');
         const liEl = document.createElement('li');
@@ -72,22 +90,17 @@
         messages.appendChild(liEl);
     }
 
-    document.getElementById('chatForm').addEventListener('onsubmit', function (event) {
-        event.preventDefault();
-        sendMessage();
-    })
-
     function sendMessage() {
-        console.log('submit!');
-        socket.emit('chat message', document.getElementById('chatInput').value);
+        socket.emit('chat message', chatInput.value);
+        chatInput.value = '';
     }
 
-    var socket = io('127.0.0.1:8090');
+    var socket = io(baseURL);
     socket.on('connect', function () {
         socket.emit('my event', {data: 'I\'m connected!'});
     });
-    socket.on('chat message', function (msg) {
-        addMessage(msg);
+    socket.on('chat message', function (response) {
+        addMessage(response['message']);
     });
 </script>
 </html>
