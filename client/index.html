@@ -91,7 +91,10 @@
     }
 
     function sendMessage() {
-        socket.emit('chat message', chatInput.value);
+        socket.emit('chat message', {
+            'message': chatInput.value,
+            'username': username,
+        });
         chatInput.value = '';
     }
 

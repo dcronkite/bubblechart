@@ -30,9 +30,10 @@ def handle_connection():
 
 
 @socketio.on('chat message')
-def handle_chat_message(message):
+def handle_chat_message(json_data):
     data = {
-        'message': message,
+        'username': json_data['username'],
+        'message': json_data['message'],
     }
     emit('chat message', data, broadcast=True)
 
