@@ -51,17 +51,50 @@
             background: #eee;
         }
     </style>
+
+    <link rel="stylesheet" href="graph.css"/>
 </head>
 <body>
-<h2 id="greeting">Logging in...</h2>
-<ul id="messages"></ul>
+<div>
+    <h2 id="greeting">Logging in...</h2>
+    <ul id="messages"></ul>
+</div>
 
-<form id="chatForm" action="#">
-    <input id="chatInput" autocomplete="off"/>
-    <button onclick="sendMessage()">Send</button>
-</form>
+<div id="graph">
+    <li>drag/scroll to translate/zoom the graph</li>
+    <li>shift-click on graph to create a node</li>
+    <li>shift-click on a node and then drag to another node to connect them with a directed edge</li>
+    <li>shift-click on a node to change its title</li>
+    <li>click on node or edge and press backspace/delete to delete</li>
+        </ul>
+</div>
+
+<div id="toolbox">
+    <input type="file" id="hidden-file-upload">
+    <input id="upload-input" type="image" title="upload graph"
+           src="upload-icon.png" alt="upload graph"/>
+    <input type="image"
+           id="download-input"
+           title="download graph"
+           src="download-icon.png"
+           alt="download graph"/>
+    <input type="image" id="delete-graph" title="delete graph" src="trash-icon.png" alt="delete graph"/>
+</div>
+
+
+<div>
+    <form id="chatForm" action="#">
+        <input id="chatInput" autocomplete="off"/>
+        <button onclick="sendMessage()">Send</button>
+    </form>
+</div>
+
+
 </body>
 
+
+<script src="https://d3js.org/d3.v5.min.js"></script>
+<script src="graph.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"
         crossorigin="anonymous"></script>
 <script type="text/javascript" charset="utf-8">
