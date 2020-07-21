@@ -1,4 +1,6 @@
+import math
 import random
+from datetime import datetime, timedelta
 
 import flask
 from flask_cors import CORS, cross_origin
@@ -9,6 +11,7 @@ app = flask.Flask(__name__)
 app.config['SECRET_KEY'] = 'a;lskdfja;lsdkfj'
 cors = CORS(app)
 socketio = SocketIO(app, cors_allowed_origins='*')
+TIME = datetime.now()
 
 
 @app.route('/')
@@ -36,6 +39,20 @@ def handle_chat_message(json_data):
         'message': json_data['message'],
     }
     emit('chat message', data, broadcast=True)
+
+
+@socketio.on('update graph')
+def update_graph(data=None):
+    global TIME
+    TIME += timedelta(minutes=1)
+    new_data = {
+        "Uhrzeit": TIME.strftime('%H:%M'),
+        "Durchschn": math.floor((random.random() * 4000) + 0),
+        "Anz": math.floor((random.random() * 1500) + 0),
+        "Gesamt": math.floor((random.random() * 15000) + 0)
+    }
+    print(new_data)
+    emit('update graph', {'data': new_data})
 
 
 if __name__ == '__main__':

@@ -25,7 +25,6 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         // define arrow markers for graph links
         let defs = svg.append('svg:defs');
         defs.append('svg:marker')
-            .attr('id', 'end-arrow')
             .attr('viewBox', '0 -5 10 10')
             .attr('refX', "32")
             .attr('markerWidth', 3.5)
@@ -361,7 +360,7 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
             })
             .on("keydown", function (d) {
                 d3.event.stopPropagation();
-                if (d3.event.keyCode == consts.ENTER_KEY && !d3.event.shiftKey) {
+                if (d3.event.keyCode === consts.ENTER_KEY && !d3.event.shiftKey) {
                     this.blur();
                 }
             })
@@ -632,26 +631,4 @@ document.onload = (function (d3, saveAs, Blob, undefined) {
         return "Make sure to save your graph locally before leaving :-)";
     };
 
-    let docEl = document.documentElement,
-        bodyEl = document.getElementsByTagName('body')[0];
-
-    let width = window.innerWidth || docEl.clientWidth || bodyEl.clientWidth,
-        height = window.innerHeight || docEl.clientHeight || bodyEl.clientHeight;
-
-    let xLoc = width / 2 - 25,
-        yLoc = 100;
-
-    // initial node data
-    let nodes = [{title: "new concept", id: 0, x: xLoc, y: yLoc},
-        {title: "new concept", id: 1, x: xLoc, y: yLoc + 200}];
-    let edges = [{source: nodes[1], target: nodes[0]}];
-
-
-    /** MAIN SVG **/
-    let svg = d3.select("body").append("svg")
-        .attr("width", width)
-        .attr("height", height);
-    let graph = new BubbleChart(svg, nodes, edges);
-    graph.setIdCt(2);
-    graph.updateGraph();
 })(window.d3, window.saveAs, window.Blob);
