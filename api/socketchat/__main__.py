@@ -94,6 +94,7 @@ class Relationship:
 NODES = [
     Bubble(topic='Hello'),
     Bubble(topic='Hello Again'),
+    Bubble(topic='Bonjour'),
 ]  # fake database
 
 RELATIONSHIPS = [
