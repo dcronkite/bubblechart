@@ -62,12 +62,26 @@ let BubbleChart = function (svg, nodes, edges) {
         .subject(function (d) {
             return {x: d.x, y: d.y};
         })
+        .on("start", function (d) {
+            let mouseX = d3.event.sourceEvent.x;
+            let mouseY = d3.event.sourceEvent.y;
+            let isInnerCircleDragEvent = graph.dragOnInnerCircle(
+                mouseX,
+                mouseY,
+                d.x,
+                d.y,
+                d.radius,
+            );
+            if (!isInnerCircleDragEvent) {
+                graph.state.shiftNodeDrag = true;
+                // reposition dragged directed edge
+                graph.dragLine.classed('hidden', false)
+                    .attr('d', 'M' + d.x + ',' + d.y + 'L' + d.x + ',' + d.y);
+            }
+        })
         .on("drag", function (d) {
             graph.state.justDragged = true;
             graph.dragmove.call(graph, d);
-            graph.onBubbleMovingListeners.forEach((func) => {
-                func(d);
-            });
         })
         .on("end", function (d) {
             // todo check if edge-mode is selected
@@ -209,14 +223,29 @@ BubbleChart.prototype.consts = {
 
 /* PROTOTYPE FUNCTIONS */
 
+BubbleChart.prototype.dragOnInnerCircle = function (x, y, cx, cy, radius) {
+    console.log(x, y, cx, cy, radius)
+    let cutoff = 0.5;
+    let smallRadius = cutoff * radius;
+    let smallRadiusSquared = smallRadius * smallRadius;
+    let distanceSquared = ((x - cx) * (x - cx)) + ((y - cy) * (y - cy));
+    console.log(smallRadiusSquared, distanceSquared)
+    return smallRadiusSquared >= distanceSquared;
+}
+
 BubbleChart.prototype.dragmove = function (d) {
     let graph = this;
+    let mouseX = d3.mouse(graph.svgG.node())[0];
+    let mouseY = d3.mouse(graph.svgG.node())[1];
     if (graph.state.shiftNodeDrag) {
-        graph.dragLine.attr('d', 'M' + d.x + ',' + d.y + 'L' + d3.mouse(graph.svgG.node())[0] + ',' + d3.mouse(this.svgG.node())[1]);
+        graph.dragLine.attr('d', 'M' + d.x + ',' + d.y + 'L' + mouseX + ',' + mouseY);
     } else {
         d.x += d3.event.dx;
         d.y += d3.event.dy;
         graph.updateGraph();
+        graph.onBubbleMovingListeners.forEach((func) => {
+            func(d);
+        });
     }
 };
 
@@ -573,7 +602,6 @@ BubbleChart.prototype.updateGraph = function () {
         return "translate(" + d.x + "," + d.y + ")";
     });
 
-
     // add new nodes
     let newGs = graph.circles.enter()
         .append("g").merge(graph.circles);
@@ -606,7 +634,10 @@ BubbleChart.prototype.updateGraph = function () {
         if (this.childNodes.length === 0) {
             d3.select(this)
                 .append("circle")
-                .attr("r", String(consts.nodeRadius));
+                .attr("r", function (d) {
+                    console.log(d.radius);
+                    return d.radius;
+                });
             graph.insertTitleLinebreaks(d3.select(this), d.title);
         }
     });

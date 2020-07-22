@@ -63,6 +63,7 @@ class Bubble:
         return {
             'id': self.bubble_id,
             'value': self.value,
+            'radius': 50,  # HACK
             'title': self.topic,
             'description': self.description,
             'category': self.category,
