@@ -5,6 +5,8 @@ let BubbleChart = function (svg, nodes, edges) {
 
     graph.nodes = nodes || [];
     graph.edges = edges || [];
+    graph.onBubbleMoveListeners = [];
+    graph.onBubbleMovingListeners = [];
 
     graph.state = {
         selectedNode: null,
@@ -60,9 +62,12 @@ let BubbleChart = function (svg, nodes, edges) {
         .subject(function (d) {
             return {x: d.x, y: d.y};
         })
-        .on("drag", function (args) {
+        .on("drag", function (d) {
             graph.state.justDragged = true;
-            graph.dragmove.call(graph, args);
+            graph.dragmove.call(graph, d);
+            graph.onBubbleMovingListeners.forEach((func) => {
+                func(d);
+            });
         })
         .on("end", function (d) {
             // todo check if edge-mode is selected
@@ -71,6 +76,9 @@ let BubbleChart = function (svg, nodes, edges) {
             if (graph.state.shiftNodeDrag) {
                 graph.dragEnd.call(graph, d3.select(this), graph.state.mouseEnterNode)
             }
+            graph.onBubbleMoveListeners.forEach((func) => {
+                func(d);
+            });
 
         });
 
@@ -526,7 +534,6 @@ BubbleChart.prototype.updateGraph = function () {
         .classed(consts.selectedClass, function (d) {
             return d === state.selectedEdge;
         })
-        // .attr("d", line([d.source.x, d.source.y, d.target.x, d.target.y]));
         .attr("d", function (d) {
             return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
         });
@@ -620,6 +627,36 @@ BubbleChart.prototype.updateWindow = function (svg) {
     svg.attr("width", x).attr("height", y);
 };
 
+BubbleChart.prototype.addNode = function (node) {
+    this.nodes.push(node);
+}
+BubbleChart.prototype.addEdge = function (edge) {
+    this.edges.push(edge);
+}
+
+BubbleChart.prototype.addOnBubbleMovedListener = function (listener) {
+    this.onBubbleMoveListeners.push(listener);
+}
+BubbleChart.prototype.addOnBubbleMovingListener = function (listener) {
+    this.onBubbleMovingListeners.push(listener);
+}
+
+
+BubbleChart.prototype.getBubbleById = function (id) {
+    for (let i = 0; i < this.nodes.length; i++) {
+        if (this.nodes[i].id === id) {
+            return this.nodes[i];
+        }
+    }
+}
+
+
+BubbleChart.prototype.moveBubble = function (id, x, y) {
+    let bubble = this.getBubbleById(id);
+    bubble.x = x;
+    bubble.y = y;
+    this.updateGraph();
+}
 
 /**** MAIN ****/
 

@@ -56,6 +56,9 @@
 </head>
 <body>
 
+<div>
+    <h2 id="greeting">Logging in...</h2>
+</div>
 
 </body>
 
@@ -65,7 +68,24 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" crossorigin="anonymous"></script>
 
 <script>
+    let baseURL = 'http://127.0.0.1:8090';
 
+    let username = null;
+    fetch(`${baseURL}/login`, {
+        method: 'POST',
+        body: JSON.stringify({
+            username: 'admin',
+            password: 'admin',
+        }),
+    }).then((response) => {
+        return response.json();
+    }).then((json) => {
+        console.log(json);
+        username = json['username'];
+        document.getElementById('greeting').innerText = `${username}'s Chat Session`;
+    });
+
+    const socket = io(baseURL);
     let docEl = document.documentElement,
         bodyEl = document.getElementsByTagName('body')[0];
 
@@ -75,18 +95,67 @@
     let xLoc = width / 2 - 25,
         yLoc = 100;
 
-    // initial node data
-    let nodes = [{title: "new concept", id: 0, x: xLoc, y: yLoc},
-        {title: "new concept", id: 1, x: xLoc, y: yLoc + 200}];
-    let edges = [{source: nodes[1], target: nodes[0]}];
+    // let edges = [{source: nodes[1], target: nodes[0]}];
 
 
     /** MAIN SVG **/
     let svg = d3.select("body").append("svg")
         .attr("width", width)
         .attr("height", height);
-    let graph = new BubbleChart(svg, nodes, edges);
+    let graph = new BubbleChart(svg, [], []);
     graph.setIdCt(2);
     graph.updateGraph();
+    graph.addOnBubbleMovedListener((bubble) => {
+        bubbleMoved(bubble);
+    });
+    graph.addOnBubbleMovingListener((bubble) => {
+        bubbleMoving(bubble);
+    });
+
+    function addNode(node) {
+        graph.addNode(node);
+        graph.updateGraph();
+    }
+
+    function getNodes() {
+        fetch(`${baseURL}/nodes`, {
+            method: 'GET',
+        }).then(response => response.json())
+            .then(data => {
+                console.log(data);
+                data['data'].forEach((newNode) => addNode(newNode))
+            })
+    }
+
+    getNodes();
+
+    function bubbleMoved(bubble) {
+        socket.emit('bubble moved', {
+            id: bubble.id,
+            x: bubble.x,
+            y: bubble.y,
+            username: username,
+        });
+    }
+
+    function bubbleMoving(bubble) {
+        socket.emit('bubble moving', {
+            id: bubble.id,
+            x: bubble.x,
+            y: bubble.y,
+            username: username,
+        });
+    }
+
+    socket.on('bubble moving', function(data) {
+        console.log(data);
+        if (data['username'] !== username) {
+            graph.moveBubble(data['id'], data['x'], data['y']);
+        }
+    });
+
+    socket.on('bubble moved', function(data) {
+        console.log(data);
+    });
 </script>
 </html>

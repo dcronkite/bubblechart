@@ -1,6 +1,9 @@
+import itertools
 import math
 import random
+from dataclasses import dataclass, field
 from datetime import datetime, timedelta
+from typing import ClassVar
 
 import flask
 from flask_cors import CORS, cross_origin
@@ -39,6 +42,68 @@ def handle_chat_message(json_data):
         'message': json_data['message'],
     }
     emit('chat message', data, broadcast=True)
+
+
+@dataclass
+class Bubble:
+    bubble_cnt: ClassVar = itertools.count()
+    topic: str
+    description: str = 'No description'
+    category: str = 'R'
+    highlighted: bool = False
+    xcoord: int = field(default_factory=lambda: random.randint(50, 500))
+    ycoord: int = field(default_factory=lambda: random.randint(50, 500))
+    value: str = 'S'  # size
+    bubble_id: int = field(init=False)
+
+    def __post_init__(self):
+        self.bubble_id = next(self.bubble_cnt)
+
+    def to_json(self):
+        return {
+            'id': self.bubble_id,
+            'value': self.value,
+            'title': self.topic,
+            'description': self.description,
+            'category': self.category,
+            'highlighted': self.highlighted,
+            'x': self.xcoord,
+            'y': self.ycoord,
+        }
+
+
+NODES = [
+    Bubble(topic='Hello'),
+    Bubble(topic='Hello Again'),
+]  # fake database
+
+
+@app.route('/nodes', methods=['GET'])
+@cross_origin()
+def get_nodes():
+    return {
+        'data': [n.to_json() for n in NODES]
+    }
+
+
+@socketio.on('bubble moving')
+def bubble_moving(json_data):
+    emit('bubble moving', {k: v for k, v in json_data.items()}, broadcast=True)
+
+
+def update_node_position(bid, x, y):
+    for bubble in NODES:
+        if bubble.bubble_id == bid:
+            bubble.xcoord = x
+            bubble.ycoord = y
+            break
+
+
+@socketio.on('bubble moved')
+def bubble_moving(json_data):
+    print('done', {k: v for k, v in json_data.items()})
+    emit('bubble moved', {k: v for k, v in json_data.items()}, broadcast=True)
+    update_node_position(json_data['id'], json_data['x'], json_data['y'])
 
 
 @socketio.on('update graph')
