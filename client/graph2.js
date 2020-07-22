@@ -132,7 +132,7 @@ let BubbleChart = function (svg, nodes, edges) {
     d3.select("#download-input").on("click", function () {
         let saveEdges = [];
         graph.edges.forEach(function (val, i) {
-            saveEdges.push({source: val.source.id, target: val.target.id});
+            saveEdges.push({source: val.source, target: val.target});
         });
         let blob = new Blob([window.JSON.stringify({
             "nodes": graph.nodes,
@@ -523,7 +523,7 @@ BubbleChart.prototype.updateGraph = function () {
         state = graph.state;
 
     graph.paths = graph.paths.data(graph.edges, function (d) {
-        return String(d.source.id) + "+" + String(d.target.id);
+        return String(d.source) + "+" + String(d.target);
     });
     let paths = graph.paths;
     // update existing paths
@@ -532,7 +532,9 @@ BubbleChart.prototype.updateGraph = function () {
             return d === state.selectedEdge;
         })
         .attr("d", function (d) {
-            return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
+            let source = graph.getBubbleById(d.source);
+            let target = graph.getBubbleById(d.target);
+            return "M" + source.x + "," + source.y + "L" + target.x + "," + target.y;
         });
 
     // remove old links
@@ -544,7 +546,9 @@ BubbleChart.prototype.updateGraph = function () {
         .style('marker-end', 'url(#end-arrow)')
         .classed("link", true)
         .attr("d", function (d) {
-            return "M" + d.source.x + "," + d.source.y + "L" + d.target.x + "," + d.target.y;
+            let source = graph.getBubbleById(d.source);
+            let target = graph.getBubbleById(d.target);
+            return "M" + source.x + "," + source.y + "L" + target.x + "," + target.y;
         })
         .merge(paths)
         .on("mouseup", function (d) {

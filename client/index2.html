@@ -91,7 +91,6 @@
     let width = window.innerWidth || docEl.clientWidth || bodyEl.clientWidth,
         height = window.innerHeight || docEl.clientHeight || bodyEl.clientHeight;
 
-    // let edges = [{source: nodes[1], target: nodes[0]}];
 
 
     /** MAIN SVG **/
@@ -110,7 +109,10 @@
 
     function addNode(node) {
         graph.addNode(node);
-        graph.updateGraph();
+    }
+
+    function addEdge(node) {
+        graph.addEdge(node);
     }
 
     function getNodes() {
@@ -118,11 +120,21 @@
             method: 'GET',
         }).then(response => response.json())
             .then(data => {
-                data['data'].forEach((newNode) => addNode(newNode))
-            })
+                data['data'].forEach((newNode) => addNode(newNode));
+            }).then(() => graph.updateGraph());
+    }
+
+    function getRelationships() {
+        fetch(`${baseURL}/relationships`, {
+            method: 'GET',
+        }).then(response => response.json())
+            .then(data => {
+                data['data'].forEach((newEdge) => addEdge(newEdge));
+            }).then(() => graph.updateGraph());
     }
 
     getNodes();
+    getRelationships();
 
     function bubbleMoved(bubble) {
         socket.emit('bubble moved', {

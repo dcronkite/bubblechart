@@ -72,10 +72,32 @@ class Bubble:
         }
 
 
+@dataclass
+class Relationship:
+    relation_cnt: ClassVar = itertools.count()
+    source: int
+    target: int
+    relation_id: int = field(init=False)
+
+    def __post_init__(self):
+        self.relation_id = next(self.relation_cnt)
+
+    def to_json(self):
+        return {
+            'id': self.relation_id,
+            'source': self.source,
+            'target': self.target,
+        }
+
+
 NODES = [
     Bubble(topic='Hello'),
     Bubble(topic='Hello Again'),
 ]  # fake database
+
+RELATIONSHIPS = [
+    Relationship(source=0, target=1),
+]
 
 
 @app.route('/nodes', methods=['GET'])
@@ -83,6 +105,14 @@ NODES = [
 def get_nodes():
     return {
         'data': [n.to_json() for n in NODES]
+    }
+
+
+@app.route('/relationships', methods=['GET'])
+@cross_origin()
+def get_relationships():
+    return {
+        'data': [r.to_json() for r in RELATIONSHIPS]
     }
 
 
