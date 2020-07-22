@@ -9,6 +9,7 @@ let BubbleChart = function (svg, nodes, edges) {
     graph.onBubbleMovingListeners = [];
 
     graph.state = {
+        previousEnterNode: null,  // previous outer circle that was entered
         selectedNode: null,
         selectedEdge: null,
         mouseDownNode: null,
@@ -621,6 +622,7 @@ BubbleChart.prototype.updateGraph = function () {
             }
         })
         .on("mouseout", function (d) {
+            state.previousEnterNode = state.mouseEnterNode;
             state.mouseEnterNode = null;
             d3.select(this).classed(consts.connectClass, false);
         })
@@ -649,6 +651,12 @@ BubbleChart.prototype.updateGraph = function () {
     newGs.classed(consts.circleGClass, true)
         .attr("transform", function (d) {
             return "translate(" + d.x + "," + d.y + ")";
+        })
+        .on("mouseover", function (d) {
+            if (state.shiftNodeDrag) {
+                // continue drag over the inner circle
+                state.mouseEnterNode = state.previousEnterNode;
+            }
         })
         .on("mousedown", function (d) {
             graph.circleMouseDown.call(graph, d3.select(this), d);
