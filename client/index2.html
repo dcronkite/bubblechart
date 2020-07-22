@@ -80,7 +80,6 @@
     }).then((response) => {
         return response.json();
     }).then((json) => {
-        console.log(json);
         username = json['username'];
         document.getElementById('greeting').innerText = `${username}'s Chat Session`;
     });
@@ -91,9 +90,6 @@
 
     let width = window.innerWidth || docEl.clientWidth || bodyEl.clientWidth,
         height = window.innerHeight || docEl.clientHeight || bodyEl.clientHeight;
-
-    let xLoc = width / 2 - 25,
-        yLoc = 100;
 
     // let edges = [{source: nodes[1], target: nodes[0]}];
 
@@ -122,7 +118,6 @@
             method: 'GET',
         }).then(response => response.json())
             .then(data => {
-                console.log(data);
                 data['data'].forEach((newNode) => addNode(newNode))
             })
     }
@@ -147,15 +142,16 @@
         });
     }
 
-    socket.on('bubble moving', function(data) {
-        console.log(data);
+    socket.on('bubble moving', function (data) {
         if (data['username'] !== username) {
             graph.moveBubble(data['id'], data['x'], data['y']);
         }
     });
 
-    socket.on('bubble moved', function(data) {
-        console.log(data);
+    socket.on('bubble moved', function (data) {
+        if (data['username'] !== username) {
+            graph.moveBubble(data['id'], data['x'], data['y']);
+        }
     });
 </script>
 </html>

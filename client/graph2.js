@@ -71,8 +71,8 @@ let BubbleChart = function (svg, nodes, edges) {
         })
         .on("end", function (d) {
             // todo check if edge-mode is selected
-            var mouse = d3.mouse(this);
-            var elem = document.elementFromPoint(mouse[0], mouse[1]);
+            let mouse = d3.mouse(this);
+            let elem = document.elementFromPoint(mouse[0], mouse[1]);
             if (graph.state.shiftNodeDrag) {
                 graph.dragEnd.call(graph, d3.select(this), graph.state.mouseEnterNode)
             }
@@ -328,7 +328,6 @@ BubbleChart.prototype.circleMouseDown = function (d3node, d) {
         state = graph.state;
     d3.event.stopPropagation();
     state.mouseDownNode = d;
-    console.log(`mousedownnode = ${JSON.stringify(d)}`);
     if (d3.event.shiftKey) {
         state.shiftNodeDrag = d3.event.shiftKey;
         // reposition dragged directed edge
@@ -378,7 +377,6 @@ BubbleChart.prototype.changeTextOfNode = function (d3node, d) {
 };
 
 BubbleChart.prototype.dragEnd = function (d3node, d) {
-    console.log('dragend');
     let graph = this,
         state = graph.state,
         consts = graph.consts;
@@ -422,7 +420,6 @@ BubbleChart.prototype.dragEnd = function (d3node, d) {
 
 // mouseup on nodes
 BubbleChart.prototype.circleMouseUp = function (d3node, d) {
-    console.log('mouse up');
     let graph = this,
         state = graph.state,
         consts = graph.consts;
@@ -551,7 +548,6 @@ BubbleChart.prototype.updateGraph = function () {
         })
         .merge(paths)
         .on("mouseup", function (d) {
-            console.log('mouseup link');
             // state.mouseDownLink = null;
         })
         .on("mousedown", function (d) {

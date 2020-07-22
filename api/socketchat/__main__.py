@@ -88,7 +88,7 @@ def get_nodes():
 
 @socketio.on('bubble moving')
 def bubble_moving(json_data):
-    emit('bubble moving', {k: v for k, v in json_data.items()}, broadcast=True)
+    emit('bubble moving', json_data, broadcast=True)
 
 
 def update_node_position(bid, x, y):
@@ -101,8 +101,7 @@ def update_node_position(bid, x, y):
 
 @socketio.on('bubble moved')
 def bubble_moving(json_data):
-    print('done', {k: v for k, v in json_data.items()})
-    emit('bubble moved', {k: v for k, v in json_data.items()}, broadcast=True)
+    emit('bubble moved', json_data, broadcast=True)
     update_node_position(json_data['id'], json_data['x'], json_data['y'])
 
 
