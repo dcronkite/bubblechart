@@ -58,6 +58,7 @@
 
 <div>
     <h2 id="greeting">Logging in...</h2>
+    <div id="bubblechart"></div>
 </div>
 
 </body>
@@ -94,7 +95,14 @@
 
 
     /** MAIN SVG **/
-    let svg = d3.select("body").append("svg")
+    // make responsive
+    let svg = d3.select("div#bubblechart")
+        .append("div")
+        .classed("svg-container", true)
+        .append("svg")
+        .attr("preserveAspectRatio", "xMinYMin meet")
+        .attr("viewBox", "0 0 1000 1000")
+        .classed("svg-content-responsive", true)
         .attr("width", width)
         .attr("height", height);
     let graph = new BubbleChart(svg, [], []);

@@ -129,8 +129,9 @@ let BubbleChart = function (svg, nodes, edges, allowZoom=false) {
 
     // listen for resize
     window.onresize = function () {
-        graph.updateWindow(svg);
+        graph.updateWindow();
     };
+    d3.select(window).on('resize.updatesvg', graph.updateWindow);
 };
 
 BubbleChart.prototype.setIdCt = function (idct) {
@@ -608,7 +609,8 @@ BubbleChart.prototype.zoomed = function () {
         .attr("transform", d3.event.transform);
 };
 
-BubbleChart.prototype.updateWindow = function (svg) {
+BubbleChart.prototype.updateWindow = function () {
+    console.log('update window');
     let docEl = document.documentElement,
         bodyEl = document.getElementsByTagName('body')[0];
     let x = window.innerWidth || docEl.clientWidth || bodyEl.clientWidth;
