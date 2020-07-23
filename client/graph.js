@@ -1,5 +1,5 @@
 // define graphcreator object
-let BubbleChart = function (svg, nodes, edges) {
+let BubbleChart = function (svg, nodes, edges, allowZoom=false) {
     let graph = this;
     graph.idct = 0;
 
@@ -123,74 +123,14 @@ let BubbleChart = function (svg, nodes, edges) {
             d3.select('body').style("cursor", "auto");
         });
 
-    svg.call(dragSvg).on("dblclick.zoom", null);
+    if (allowZoom) {
+       svg.call(dragSvg).on("dblclick.zoom", null);
+    }
 
     // listen for resize
     window.onresize = function () {
         graph.updateWindow(svg);
     };
-
-    // handle download data
-    d3.select("#download-input").on("click", function () {
-        let saveEdges = [];
-        graph.edges.forEach(function (val, i) {
-            saveEdges.push({source: val.source.id, target: val.target.id});
-        });
-        let blob = new Blob([window.JSON.stringify({
-            "nodes": graph.nodes,
-            "edges": saveEdges
-        })], {type: "text/plain;charset=utf-8"});
-        saveAs(blob, "mydag.json");
-    });
-
-
-    // handle uploaded data
-    d3.select("#upload-input").on("click", function () {
-        document.getElementById("hidden-file-upload").click();
-    });
-    d3.select("#hidden-file-upload").on("change", function () {
-        if (window.File && window.FileReader && window.FileList && window.Blob) {
-            let uploadFile = this.files[0];
-            let filereader = new window.FileReader();
-
-            filereader.onload = function () {
-                let txtRes = filereader.result;
-                // TODO better error handling
-                try {
-                    let jsonObj = JSON.parse(txtRes);
-                    graph.deleteGraph(true);
-                    graph.nodes = jsonObj.nodes;
-                    graph.setIdCt(jsonObj.nodes.length + 1);
-                    let newEdges = jsonObj.edges;
-                    newEdges.forEach(function (e, i) {
-                        newEdges[i] = {
-                            source: graph.nodes.filter(function (n) {
-                                return n.id === e.source;
-                            })[0],
-                            target: graph.nodes.filter(function (n) {
-                                return n.id === e.target;
-                            })[0]
-                        };
-                    });
-                    graph.edges = newEdges;
-                    graph.updateGraph();
-                } catch (err) {
-                    window.alert("Error parsing uploaded file\nerror message: " + err.message);
-                    return;
-                }
-            };
-            filereader.readAsText(uploadFile);
-
-        } else {
-            alert("Your browser won't let you save this graph -- try upgrading your browser to IE 10+ or Chrome or Firefox.");
-        }
-
-    });
-
-    // handle delete graph
-    d3.select("#delete-graph").on("click", function () {
-        graph.deleteGraph(false);
-    });
 };
 
 BubbleChart.prototype.setIdCt = function (idct) {
@@ -211,14 +151,6 @@ BubbleChart.prototype.consts = {
 
 /* PROTOTYPE FUNCTIONS */
 
-
-BubbleChart.prototype.dragmoveOuter = function (d) {
-    let graph = this;
-    let mouseX = d3.mouse(graph.svgG.node())[0];
-    let mouseY = d3.mouse(graph.svgG.node())[1];
-    graph.dragLine.attr('d', 'M' + d.x + ',' + d.y + 'L' + mouseX + ',' + mouseY);
-};
-
 BubbleChart.prototype.dragmove = function (d) {
     let graph = this;
     let mouseX = d3.mouse(graph.svgG.node())[0];
@@ -232,19 +164,6 @@ BubbleChart.prototype.dragmove = function (d) {
         graph.onBubbleMovingListeners.forEach((func) => {
             func(d);
         });
-    }
-};
-
-BubbleChart.prototype.deleteGraph = function (skipPrompt) {
-    let graph = this,
-        doDelete = true;
-    if (!skipPrompt) {
-        doDelete = window.confirm("Press OK to delete this graph");
-    }
-    if (doDelete) {
-        graph.nodes = [];
-        graph.edges = [];
-        graph.updateGraph();
     }
 };
 
