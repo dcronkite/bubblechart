@@ -82,7 +82,7 @@
         return response.json();
     }).then((json) => {
         username = json['username'];
-        document.getElementById('greeting').innerText = `${username}'s Chat Session`;
+        document.getElementById('greeting').innerText = `${username}'s Session`;
     });
 
     const socket = io(baseURL);
