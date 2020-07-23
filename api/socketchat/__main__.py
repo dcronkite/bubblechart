@@ -118,6 +118,14 @@ def get_relationships():
     }
 
 
+@socketio.on('add relationship')
+def bubble_moving(json_data):
+    print(json_data)
+    new_relationship = Relationship(**json_data)
+    RELATIONSHIPS.append(new_relationship)
+    emit('add relationship', new_relationship.to_json(), broadcast=True)
+
+
 @socketio.on('bubble moving')
 def bubble_moving(json_data):
     emit('bubble moving', json_data, broadcast=True)

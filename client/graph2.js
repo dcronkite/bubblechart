@@ -7,6 +7,7 @@ let BubbleChart = function (svg, nodes, edges) {
     graph.edges = edges || [];
     graph.onBubbleMoveListeners = [];
     graph.onBubbleMovingListeners = [];
+    graph.onRelationshipCreatedListeners = [];
 
     graph.state = {
         previousEnterNode: null,  // previous outer circle that was entered
@@ -415,15 +416,16 @@ BubbleChart.prototype.dragEnd = function (d3node, d) {
 
     if (mouseDownNode !== d) {
         // we're in a different node: create new edge for mousedown edge and add to graph
-        let newEdge = {source: mouseDownNode.id, target: d.id};
+        let newSource = mouseDownNode.id;
+        let newTarget = d.id;
         let filtRes = graph.paths.filter(function (d) {
-            if (d.source === newEdge.target && d.target === newEdge.source) {
+            if (d.source === newTarget && d.target === newSource) {
                 graph.edges.splice(graph.edges.indexOf(d), 1);
             }
-            return d.source === newEdge.source && d.target === newEdge.target;
+            return d.source === newSource && d.target === newTarget;
         });
         if (!filtRes || !filtRes[0] || !filtRes[0].length) {
-            graph.edges.push(newEdge);
+            graph.createEdge(newSource, newTarget);
             graph.updateGraph();
         }
     }
@@ -698,12 +700,23 @@ BubbleChart.prototype.updateWindow = function (svg) {
 BubbleChart.prototype.addNode = function (node) {
     this.nodes.push(node);
 }
+
+BubbleChart.prototype.createEdge = function (source, target) {
+    this.onRelationshipCreatedListeners.forEach((listener) => {
+        console.log(source, target);
+        listener(source, target);
+    })
+}
+
 BubbleChart.prototype.addEdge = function (edge) {
     this.edges.push(edge);
 }
 
 BubbleChart.prototype.addOnBubbleMovedListener = function (listener) {
     this.onBubbleMoveListeners.push(listener);
+}
+BubbleChart.prototype.addOnRelationshipCreatedListener = function (listener) {
+    this.onRelationshipCreatedListeners.push(listener);
 }
 BubbleChart.prototype.addOnBubbleMovingListener = function (listener) {
     this.onBubbleMovingListeners.push(listener);

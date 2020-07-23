@@ -106,6 +106,13 @@
     graph.addOnBubbleMovingListener((bubble) => {
         bubbleMoving(bubble);
     });
+    graph.addOnRelationshipCreatedListener((source, target) => {
+        console.log(source, target)
+        socket.emit('add relationship', {
+            'source': source,
+            'target': target
+        });
+    });
 
     function addNode(node) {
         graph.addNode(node);
@@ -165,5 +172,11 @@
             graph.moveBubble(data['id'], data['x'], data['y']);
         }
     });
+
+    socket.on('add relationship', function(data) {
+       addEdge(data);
+       graph.updateGraph();
+    });
+
 </script>
 </html>
