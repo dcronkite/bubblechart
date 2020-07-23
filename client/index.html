@@ -55,51 +55,21 @@
     <link rel="stylesheet" href="graph.css"/>
 </head>
 <body>
+
 <div>
     <h2 id="greeting">Logging in...</h2>
-    <ul id="messages"></ul>
 </div>
-
-<div id="graph">
-    <li>drag/scroll to translate/zoom the graph</li>
-    <li>shift-click on graph to create a node</li>
-    <li>shift-click on a node and then drag to another node to connect them with a directed edge</li>
-    <li>shift-click on a node to change its title</li>
-    <li>click on node or edge and press backspace/delete to delete</li>
-        </ul>
-</div>
-
-<div id="toolbox">
-    <input type="file" id="hidden-file-upload">
-    <input id="upload-input" type="image" title="upload graph"
-           src="upload-icon.png" alt="upload graph"/>
-    <input type="image"
-           id="download-input"
-           title="download graph"
-           src="download-icon.png"
-           alt="download graph"/>
-    <input type="image" id="delete-graph" title="delete graph" src="trash-icon.png" alt="delete graph"/>
-</div>
-
-
-<div>
-    <form id="chatForm" action="#">
-        <input id="chatInput" autocomplete="off"/>
-        <button onclick="sendMessage()">Send</button>
-    </form>
-</div>
-
 
 </body>
 
 
 <script src="https://d3js.org/d3.v5.min.js"></script>
 <script src="graph.js"></script>
-<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js"
-        crossorigin="anonymous"></script>
-<script type="text/javascript" charset="utf-8">
-    let baseURL = 'http://127.0.0.1:8090'
-    const chatInput = document.getElementById('chatInput');
+<script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/2.3.0/socket.io.js" crossorigin="anonymous"></script>
+
+<script>
+    let baseURL = 'http://127.0.0.1:8090';
+
     let username = null;
     fetch(`${baseURL}/login`, {
         method: 'POST',
@@ -110,33 +80,103 @@
     }).then((response) => {
         return response.json();
     }).then((json) => {
-        console.log(json);
         username = json['username'];
         document.getElementById('greeting').innerText = `${username}'s Chat Session`;
-    })
+    });
 
-    function addMessage(text) {
-        const messages = document.getElementById('messages');
-        const liEl = document.createElement('li');
-        const textEl = document.createTextNode(text);
-        liEl.appendChild(textEl);
-        messages.appendChild(liEl);
-    }
+    const socket = io(baseURL);
+    let docEl = document.documentElement,
+        bodyEl = document.getElementsByTagName('body')[0];
 
-    function sendMessage() {
-        socket.emit('chat message', {
-            'message': chatInput.value,
-            'username': username,
+    let width = window.innerWidth || docEl.clientWidth || bodyEl.clientWidth,
+        height = window.innerHeight || docEl.clientHeight || bodyEl.clientHeight;
+
+
+
+    /** MAIN SVG **/
+    let svg = d3.select("body").append("svg")
+        .attr("width", width)
+        .attr("height", height);
+    let graph = new BubbleChart(svg, [], []);
+    graph.setIdCt(2);
+    graph.updateGraph();
+    graph.addOnBubbleMovedListener((bubble) => {
+        bubbleMoved(bubble);
+    });
+    graph.addOnBubbleMovingListener((bubble) => {
+        bubbleMoving(bubble);
+    });
+    graph.addOnRelationshipCreatedListener((source, target) => {
+        console.log(source, target)
+        socket.emit('add relationship', {
+            'source': source,
+            'target': target
         });
-        chatInput.value = '';
+    });
+
+    function addNode(node) {
+        graph.addNode(node);
     }
 
-    var socket = io(baseURL);
-    socket.on('connect', function () {
-        socket.emit('my event', {data: 'I\'m connected!'});
+    function addEdge(node) {
+        graph.addEdge(node);
+    }
+
+    function getNodes() {
+        fetch(`${baseURL}/nodes`, {
+            method: 'GET',
+        }).then(response => response.json())
+            .then(data => {
+                data['data'].forEach((newNode) => addNode(newNode));
+            }).then(() => graph.updateGraph());
+    }
+
+    function getRelationships() {
+        fetch(`${baseURL}/relationships`, {
+            method: 'GET',
+        }).then(response => response.json())
+            .then(data => {
+                data['data'].forEach((newEdge) => addEdge(newEdge));
+            }).then(() => graph.updateGraph());
+    }
+
+    getNodes();
+    getRelationships();
+
+    function bubbleMoved(bubble) {
+        socket.emit('bubble moved', {
+            id: bubble.id,
+            x: bubble.x,
+            y: bubble.y,
+            username: username,
+        });
+    }
+
+    function bubbleMoving(bubble) {
+        socket.emit('bubble moving', {
+            id: bubble.id,
+            x: bubble.x,
+            y: bubble.y,
+            username: username,
+        });
+    }
+
+    socket.on('bubble moving', function (data) {
+        if (data['username'] !== username) {
+            graph.moveBubble(data['id'], data['x'], data['y']);
+        }
     });
-    socket.on('chat message', function (response) {
-        addMessage(response['message']);
+
+    socket.on('bubble moved', function (data) {
+        if (data['username'] !== username) {
+            graph.moveBubble(data['id'], data['x'], data['y']);
+        }
     });
+
+    socket.on('add relationship', function(data) {
+       addEdge(data);
+       graph.updateGraph();
+    });
+
 </script>
 </html>
