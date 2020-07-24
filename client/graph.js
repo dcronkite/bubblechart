@@ -1,5 +1,5 @@
 // define graphcreator object
-let BubbleChart = function (svg, nodes, edges, allowZoom=false) {
+let BubbleChart = function (svg, nodes, edges, allowZoom = false) {
     let graph = this;
     graph.idct = 0;
 
@@ -124,7 +124,7 @@ let BubbleChart = function (svg, nodes, edges, allowZoom=false) {
         });
 
     if (allowZoom) {
-       svg.call(dragSvg).on("dblclick.zoom", null);
+        svg.call(dragSvg).on("dblclick.zoom", null);
     }
 
     // listen for resize
@@ -474,10 +474,6 @@ BubbleChart.prototype.updateGraph = function () {
         .attr("d", function (d) {
             let source = graph.getBubbleById(d.source);
             let target = graph.getBubbleById(d.target);
-            console.log(d);
-            console.log(source, target);
-            console.log(target.x);
-            console.log(source.x);
             return "M" + source.x + "," + source.y + "L" + target.x + "," + target.y;
         })
         .merge(paths)
@@ -591,7 +587,6 @@ BubbleChart.prototype.zoomed = function () {
 };
 
 BubbleChart.prototype.updateWindow = function () {
-    console.log('update window');
     let docEl = document.documentElement,
         bodyEl = document.getElementsByTagName('body')[0];
     let x = window.innerWidth || docEl.clientWidth || bodyEl.clientWidth;
@@ -605,7 +600,6 @@ BubbleChart.prototype.addNode = function (node) {
 
 BubbleChart.prototype.createEdge = function (source, target) {
     this.onRelationshipCreatedListeners.forEach((listener) => {
-        console.log(source, target);
         listener(source, target);
     })
 }
