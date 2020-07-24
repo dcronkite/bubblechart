@@ -435,25 +435,6 @@ BubbleChart.prototype.svgKeyDown = function () {
     if (state.lastKeyDown !== -1) return;
 
     state.lastKeyDown = d3.event.keyCode;
-    let selectedNode = state.selectedNode,
-        selectedEdge = state.selectedEdge;
-
-    switch (d3.event.keyCode) {
-        case consts.BACKSPACE_KEY:
-        case consts.DELETE_KEY:
-            d3.event.preventDefault();
-            if (selectedNode) {
-                graph.nodes.splice(graph.nodes.indexOf(selectedNode), 1);
-                graph.spliceLinksForNode(selectedNode);
-                state.selectedNode = null;
-                graph.updateGraph();
-            } else if (selectedEdge) {
-                graph.edges.splice(graph.edges.indexOf(selectedEdge), 1);
-                state.selectedEdge = null;
-                graph.updateGraph();
-            }
-            break;
-    }
 };
 
 BubbleChart.prototype.svgKeyUp = function () {
