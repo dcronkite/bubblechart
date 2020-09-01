@@ -49,7 +49,7 @@ class Bubble:
     bubble_cnt: ClassVar = itertools.count()
     topic: str
     description: str = 'No description'
-    category: str = 'R'
+    category: str = 'PV'
     highlighted: bool = False
     xcoord: int = field(default_factory=lambda: random.randint(50, 500))
     ycoord: int = field(default_factory=lambda: random.randint(50, 500))
@@ -93,8 +93,8 @@ class Relationship:
 
 NODES = [
     Bubble(topic='Hello'),
-    Bubble(topic='Hello Again'),
-    Bubble(topic='Bonjour'),
+    Bubble(topic='Hello Again', category='SD'),
+    Bubble(topic='Bonjour', category='HR'),
 ]  # fake database
 
 RELATIONSHIPS = [

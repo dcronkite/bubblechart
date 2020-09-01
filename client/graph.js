@@ -463,6 +463,18 @@ BubbleChart.prototype.svgKeyUp = function () {
     this.state.lastKeyDown = -1;
 };
 
+function getColorForNode(d) {
+    if (d.category === 'PV') {
+        return '#57A645';
+    } else if (d.category === 'SD') {
+        return '#D36B12';
+    } else if (d.category === 'HR') {
+        return '#087DC3';
+    } else {
+        return '#000000';
+    }
+}
+
 // call to propagate changes to graph
 BubbleChart.prototype.updateGraph = function () {
 
@@ -612,7 +624,14 @@ BubbleChart.prototype.updateGraph = function () {
                 .append("circle")
                 .attr("r", function (d) {
                     return d.radius;
-                });
+                })
+                .style("fill", function (d) {
+                    return getColorForNode(d);
+                })
+                .style("stroke", function (d) {
+                    return getColorForNode(d);
+                })
+            ;
             graph.insertTitleLinebreaks(d3.select(this), d.label);
         }
     });
