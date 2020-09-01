@@ -241,7 +241,7 @@ BubbleChart.prototype.removeSelectFromNode = function () {
         return cd.id === graph.state.selectedNode.id;
     })
         .classed(graph.consts.selectedClass, false)
-        .each(function(d, i) {
+        .each(function (d, i) {
             graph.insertTitleLinebreaks(d3.select(this), d.label);
         })
     ;
@@ -475,6 +475,18 @@ function getColorForNode(d) {
     }
 }
 
+function getLightColorForNode(d) {
+    if (d.category === 'PV') {
+        return '#BBF2AE';
+    } else if (d.category === 'SD') {
+        return '#DB9455';
+    } else if (d.category === 'HR') {
+        return '#459BCC';
+    } else {
+        return '#FFFFFF';
+    }
+}
+
 // call to propagate changes to graph
 BubbleChart.prototype.updateGraph = function () {
 
@@ -591,7 +603,14 @@ BubbleChart.prototype.updateGraph = function () {
                 .append("circle")
                 .attr("r", function (d) {
                     return d.radius + 20;
-                });
+                })
+                .style("fill", function (d) {
+                    return getLightColorForNode(d);
+                })
+                .style("stroke", function (d) {
+                    return getLightColorForNode(d);
+                })
+            ;
         }
     });
 
