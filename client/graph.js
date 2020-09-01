@@ -60,6 +60,8 @@ let BubbleChart = function (svg, nodes, edges, allowZoom = false) {
     graph.paths = svgG.append("g").selectAll("g");
     graph.circles = svgG.append("g").selectAll("g");
     graph.outerCircles = svgG.append("g").selectAll("g");
+    graph.plusButtons = svgG.append("g").selectAll("g");
+    graph.minusButtons = svgG.append("g").selectAll("g");
 
     graph.drag = d3.drag()
         .subject(function (d) {
@@ -494,17 +496,34 @@ BubbleChart.prototype.updateGraph = function () {
     graph.circles = graph.circles.data(graph.nodes, function (d) {
         return d.id;
     });
+    graph.minusButtons = graph.minusButtons.data(graph.nodes, function (d) {
+        return d.id;
+    });
+    graph.plusButtons = graph.plusButtons.data(graph.nodes, function (d) {
+        return d.id;
+    });
 
     // remove old nodes
     graph.outerCircles.exit().remove();
     graph.circles.exit().remove();
+    graph.minusButtons.exit().remove();
+    graph.plusButtons.exit().remove();
 
     graph.outerCircles.attr("transform", function (d) {
-        return "translate(" + d.x + "," + d.y + ")";
+        return `translate(${d.x},${d.y})`;
     });
 
     graph.circles.attr("transform", function (d) {
-        return "translate(" + d.x + "," + d.y + ")";
+        return `translate(${d.x},${d.y})`;
+    });
+
+    graph.minusButtons.attr("transform", function (d) {
+        return `translate(${d.x - 50},${d.y - 50})`;
+    });
+
+
+    graph.plusButtons.attr("transform", function (d) {
+        return `translate(${d.x + 50},${d.y - 50})`;
     });
 
     // add new nodes
@@ -512,7 +531,7 @@ BubbleChart.prototype.updateGraph = function () {
         .append("g").merge(graph.outerCircles);
     newOGs.classed(consts.circleGClass, true)
         .attr("transform", function (d) {
-            return "translate(" + d.x + "," + d.y + ")";
+            return `translate(${d.x},${d.y})`;
         })
         .on("mouseover", function (d) {
             state.mouseEnterNode = d;
@@ -549,7 +568,7 @@ BubbleChart.prototype.updateGraph = function () {
 
     newGs.classed(consts.circleGClass, true)
         .attr("transform", function (d) {
-            return "translate(" + d.x + "," + d.y + ")";
+            return `translate(${d.x},${d.y})`;
         })
         .on("mouseover", function (d) {
             if (state.shiftNodeDrag) {
@@ -577,7 +596,50 @@ BubbleChart.prototype.updateGraph = function () {
             graph.insertTitleLinebreaks(d3.select(this), d.title);
         }
     });
-    console.log('Update graph done');
+
+    // add plus/minus buttons
+    let plusButtons = graph.plusButtons.enter()
+        .append("g").merge(graph.plusButtons);
+    plusButtons.classed('sizeButton', true)
+        .attr("transform", function (d) {
+            return `translate(${d.x + 100},${d.y - 100})`;
+        })
+        .attr("click", function (d) {
+            console.log(`You clicked - me! ${d.id}`);
+        })
+    ;
+    graph.plusButtons = plusButtons;
+    plusButtons.each(function (d) {
+        if (this.childNodes.length === 0) {
+            d3.select(this)
+                .append("circle")
+                .attr("r", function (d) {
+                    return 20;
+                });
+            graph.insertTitleLinebreaks(d3.select(this), '+');
+        }
+    });
+    let minusButtons = graph.minusButtons.enter()
+        .append("g").merge(graph.minusButtons);
+    minusButtons.classed('sizeButton', true)
+        .attr("transform", function (d) {
+            return `translate(${d.x - 100},${d.y - 100})`;
+        })
+        .attr("click", function (d) {
+            console.log(`You clicked - me! ${d.id}`);
+        })
+    ;
+    graph.minusButtons = minusButtons;
+    minusButtons.each(function (d) {
+        if (this.childNodes.length === 0) {
+            d3.select(this)
+                .append("circle")
+                .attr("r", function (d) {
+                    return 20;
+                });
+            graph.insertTitleLinebreaks(d3.select(this), '-');
+        }
+    });
 
 };
 
