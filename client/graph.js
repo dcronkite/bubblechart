@@ -186,6 +186,7 @@ BubbleChart.prototype.selectElementContents = function (el) {
 BubbleChart.prototype.insertTitleLinebreaks = function (gEl, title) {
     let words = title.split(/\s+/g),
         nwords = words.length;
+    gEl.select("text").remove()
     let el = gEl.append("text")
         .attr("text-anchor", "middle")
         .attr("dy", "-" + (nwords - 1) * 7.5);
@@ -221,6 +222,7 @@ BubbleChart.prototype.replaceSelectEdge = function (d3Path, edgeData) {
 BubbleChart.prototype.replaceSelectNode = function (d3Node, nodeData) {
     let graph = this;
     d3Node.classed(this.consts.selectedClass, true);
+    graph.insertTitleLinebreaks(d3Node, nodeData.title);
     if (graph.state.selectedNode) {
         graph.removeSelectFromNode();
     }
@@ -237,7 +239,12 @@ BubbleChart.prototype.removeSelectFromNode = function () {
     let graph = this;
     graph.circles.filter(function (cd) {
         return cd.id === graph.state.selectedNode.id;
-    }).classed(graph.consts.selectedClass, false);
+    })
+        .classed(graph.consts.selectedClass, false)
+        .each(function(d, i) {
+            graph.insertTitleLinebreaks(d3.select(this), d.label);
+        })
+    ;
     graph.plusButtons.filter(function (cd) {
         return cd.id === graph.state.selectedNode.id;
     }).style("visibility", "hidden");
@@ -311,7 +318,7 @@ BubbleChart.prototype.changeTextOfNode = function (d3node, d) {
         .append("xhtml:p")
         .attr("id", consts.activeEditId)
         .attr("contentEditable", "true")
-        .text(d.title)
+        .text(d.label)
         .on("mousedown", function (d) {
             d3.event.stopPropagation();
         })
@@ -322,8 +329,8 @@ BubbleChart.prototype.changeTextOfNode = function (d3node, d) {
             }
         })
         .on("blur", function (d) {
-            d.title = this.textContent;
-            graph.insertTitleLinebreaks(d3node, d.title);
+            d.label = this.textContent;
+            graph.insertTitleLinebreaks(d3node, d.label);
             d3.select(this.parentElement).remove();
         });
     return d3txt;
@@ -389,7 +396,6 @@ BubbleChart.prototype.circleMouseUp = function (d3node, d) {
             graph.removeSelectFromEdge();
         }
     }
-
     let prevNode = state.selectedNode;
     if (!prevNode || prevNode.id !== d.id) {
         graph.replaceSelectNode(d3node, d);
@@ -595,7 +601,7 @@ BubbleChart.prototype.updateGraph = function () {
         })
         .call(graph.drag)
         .on("click", function (d) {
-            graph.circleMouseUp.call(graph, d3.select(this), d);
+            // graph.circleMouseUp.call(graph, d3.select(this), d);
         });
 
     graph.circles = newGs;
@@ -607,7 +613,7 @@ BubbleChart.prototype.updateGraph = function () {
                 .attr("r", function (d) {
                     return d.radius;
                 });
-            graph.insertTitleLinebreaks(d3.select(this), d.title);
+            graph.insertTitleLinebreaks(d3.select(this), d.label);
         }
     });
 

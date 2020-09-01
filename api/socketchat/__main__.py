@@ -64,8 +64,8 @@ class Bubble:
             'id': self.bubble_id,
             'value': self.value,
             'radius': 50,  # HACK
-            'title': self.topic,
-            'description': self.description,
+            'label': self.topic,
+            'title': self.description,
             'category': self.category,
             'highlighted': self.highlighted,
             'x': self.xcoord,
