@@ -577,6 +577,7 @@ BubbleChart.prototype.updateGraph = function () {
             graph.insertTitleLinebreaks(d3.select(this), d.title);
         }
     });
+    console.log('Update graph done');
 
 };
 
@@ -601,11 +602,16 @@ BubbleChart.prototype.addNode = function (node) {
 BubbleChart.prototype.createEdge = function (source, target) {
     this.onRelationshipCreatedListeners.forEach((listener) => {
         listener(source, target);
-    })
+    });
+    // this.edges.push({'source': source, 'target': target});
 }
 
 BubbleChart.prototype.addEdge = function (edge) {
     this.edges.push(edge);
+}
+
+BubbleChart.prototype.clearEdges = function () {
+    this.edges = [];
 }
 
 BubbleChart.prototype.addOnBubbleMovedListener = function (listener) {
@@ -633,6 +639,25 @@ BubbleChart.prototype.moveBubble = function (id, x, y) {
     bubble.x = x;
     bubble.y = y;
     this.updateGraph();
+}
+
+BubbleChart.prototype.clear = function () {
+    this.nodes = [];
+}
+
+BubbleChart.prototype.get = function (kwargs) {
+    let chosenBubbles = [];
+    for (let i = 0; i < this.nodes.length; i++) {
+        if (kwargs['filter'](this.nodes[i])) {
+            chosenBubbles.push(this.nodes[i]);
+        }
+    }
+    return chosenBubbles;
+}
+
+BubbleChart.prototype.updateOnly = function (bubble) {
+    console.error('Update only this bubble not implemented');
+    console.log(bubble);
 }
 
 /**** MAIN ****/
