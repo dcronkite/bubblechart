@@ -120,7 +120,7 @@ def get_relationships():
 
 
 @socketio.on('add relationship')
-def bubble_moving(json_data):
+def add_relationship(json_data):
     print(json_data)
     new_relationship = Relationship(**json_data)
     RELATIONSHIPS.append(new_relationship)
@@ -141,9 +141,23 @@ def update_node_position(bid, x, y):
 
 
 @socketio.on('bubble moved')
-def bubble_moving(json_data):
+def bubble_moved(json_data):
     emit('bubble moved', json_data, broadcast=True)
     update_node_position(json_data['id'], json_data['x'], json_data['y'])
+
+
+@socketio.on('change bubble size')
+def bubble_moved(json_data):
+    print(json_data)
+    emit('change bubble size', json_data, broadcast=True)
+    change_bubble_size(json_data['id'], json_data['size'])
+
+
+def change_bubble_size(bid, size):
+    for bubble in NODES:
+        if bubble.bubble_id == bid:
+            bubble.size = size
+            break
 
 
 @socketio.on('update graph')

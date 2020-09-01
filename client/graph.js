@@ -8,6 +8,7 @@ let BubbleChart = function (svg, nodes, edges, allowZoom = false) {
     graph.onBubbleMoveListeners = [];
     graph.onBubbleMovingListeners = [];
     graph.onRelationshipCreatedListeners = [];
+    graph.onBubbleSizeChangeListener = [];
 
     graph.state = {
         previousEnterNode: null,  // previous outer circle that was entered
@@ -291,6 +292,52 @@ BubbleChart.prototype.pathMouseDown = function (d3path, d) {
         graph.removeSelectFromEdge();
     }
 };
+
+BubbleChart.prototype.increaseBubbleSize = function (d3node, d) {
+    let graph = this,
+        state = graph.state;
+    if (d.size === 'S') {
+        d.size = 'M';
+    } else if (d.size === 'M') {
+        d.size = 'L';
+    } else {
+        return;
+    }
+    graph.updateBubbleSize(d);
+}
+
+BubbleChart.prototype.decreaseBubbleSize = function (d3node, d) {
+    let graph = this,
+        state = graph.state;
+    if (d.size === 'L') {
+        d.size = 'M';
+    } else if (d.size === 'M') {
+        d.size = 'S';
+    } else {
+        return;
+    }
+    graph.updateBubbleSize(d);
+}
+
+BubbleChart.prototype.updateBubbleSize = function (d) {
+    graph.circles.filter(function (cd) {
+        return cd.id === graph.state.selectedNode.id;
+    })
+        .select('circle')
+        .attr("r", function (d) {
+            return getSizeForNode(d);
+        });
+    graph.outerCircles.filter(function (cd) {
+        return cd.id === graph.state.selectedNode.id;
+    })
+        .select('circle')
+        .attr("r", function (d) {
+            return getSizeForNode(d) + 20;
+        });
+    graph.onBubbleSizeChangeListener.forEach((func) => {
+        func(d);
+    });
+}
 
 BubbleChart.prototype.outerCircleMouseDown = function (d3node, d) {
     let graph = this,
@@ -687,7 +734,8 @@ BubbleChart.prototype.updateGraph = function () {
         .attr("transform", function (d) {
             return `translate(${d.x + 50},${d.y - 50})`;
         })
-        .attr("click", function (d) {
+        .on("click", function (d) {
+            graph.increaseBubbleSize.call(graph, d3.select(this), d);
         })
     ;
     graph.plusButtons = plusButtons;
@@ -714,7 +762,8 @@ BubbleChart.prototype.updateGraph = function () {
         .attr("transform", function (d) {
             return `translate(${d.x - 50},${d.y - 50})`;
         })
-        .attr("click", function (d) {
+        .on("click", function (d) {
+            graph.decreaseBubbleSize.call(graph, d3.select(this), d);
         })
     ;
     graph.minusButtons = minusButtons;
@@ -780,6 +829,9 @@ BubbleChart.prototype.addOnRelationshipCreatedListener = function (listener) {
 BubbleChart.prototype.addOnBubbleMovingListener = function (listener) {
     this.onBubbleMovingListeners.push(listener);
 }
+BubbleChart.prototype.addOnBubbleSizeChangeListener = function (listener) {
+    this.onBubbleSizeChangeListener.push(listener);
+}
 
 
 BubbleChart.prototype.getBubbleById = function (id) {
@@ -788,6 +840,25 @@ BubbleChart.prototype.getBubbleById = function (id) {
             return this.nodes[i];
         }
     }
+}
+
+
+BubbleChart.prototype.changeBubbleSize = function (id, size) {
+    this.getBubbleById(id).size = size;
+    graph.circles.filter(function (cd) {
+        return cd.id === id;
+    })
+        .select('circle')
+        .attr("r", function (d) {
+            return getSizeForNode(d);
+        });
+    graph.outerCircles.filter(function (cd) {
+        return cd.id === id;
+    })
+        .select('circle')
+        .attr("r", function (d) {
+            return getSizeForNode(d) + 20;
+        });
 }
 
 
