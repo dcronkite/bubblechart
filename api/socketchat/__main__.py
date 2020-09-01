@@ -148,9 +148,14 @@ def bubble_moved(json_data):
 
 @socketio.on('change bubble size')
 def bubble_moved(json_data):
-    print(json_data)
     emit('change bubble size', json_data, broadcast=True)
     change_bubble_size(json_data['id'], json_data['size'])
+
+
+@socketio.on('bubble selected')
+def bubble_moved(json_data):
+    print(json_data)
+    emit('bubble selected', json_data, broadcast=True)
 
 
 def change_bubble_size(bid, size):

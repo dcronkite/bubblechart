@@ -9,6 +9,7 @@ let BubbleChart = function (svg, nodes, edges, allowZoom = false) {
     graph.onBubbleMovingListeners = [];
     graph.onRelationshipCreatedListeners = [];
     graph.onBubbleSizeChangeListener = [];
+    graph.onBubbleSelectedListener = [];
 
     graph.state = {
         previousEnterNode: null,  // previous outer circle that was entered
@@ -458,11 +459,32 @@ BubbleChart.prototype.circleMouseUp = function (d3node, d) {
     let prevNode = state.selectedNode;
     if (!prevNode || prevNode.id !== d.id) {
         graph.replaceSelectNode(d3node, d);
+        graph.onBubbleSelectedListener.forEach((func) => {
+            func(d, true);
+        });
     } else {
         graph.removeSelectFromNode();
+        graph.onBubbleSelectedListener.forEach((func) => {
+            func(d, false);
+        });
     }
 
 }; // end of circles mouseup
+
+BubbleChart.prototype.selectNode = function (id, selectNewNode) {
+    let graph = this;
+
+    let d = graph.getBubbleById(id);
+    let d3node = graph.circles.filter(function (cd) {
+        return cd.id === id;
+    });
+    if (selectNewNode) {
+        graph.replaceSelectNode(d3node, d);
+    } else {
+        graph.removeSelectFromNode();
+    }
+}
+
 
 // mouseup on nodes
 BubbleChart.prototype.outerCircleMouseUp = function (d3node, d) {
@@ -831,6 +853,9 @@ BubbleChart.prototype.addOnBubbleMovingListener = function (listener) {
 }
 BubbleChart.prototype.addOnBubbleSizeChangeListener = function (listener) {
     this.onBubbleSizeChangeListener.push(listener);
+}
+BubbleChart.prototype.addOnBubbleSelectedListener = function (listener) {
+    this.onBubbleSelectedListener.push(listener);
 }
 
 

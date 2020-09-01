@@ -122,11 +122,19 @@
     });
     graph.addOnBubbleSizeChangeListener((bubble) => {
         socket.emit('change bubble size', {
-           'id': bubble.id,
-           'size': bubble.size,
+            'id': bubble.id,
+            'size': bubble.size,
             'username': username,
         });
-    })
+    });
+    graph.addOnBubbleSelectedListener((bubble, selectNewNode) => {
+        socket.emit('bubble selected', {
+            'id': bubble.id,
+            'selectNewNode': selectNewNode,
+            'username': username,
+        });
+    });
+
 
     function addNode(node) {
         graph.addNode(node);
@@ -198,6 +206,12 @@
         addEdge(data);
         graph.updateGraph();
     });
+
+    socket.on('bubble selected', function (data) {
+        if (data['username'] !== username) {
+            graph.selectNode(data['id'], data['selectNewNode']);
+        }
+    })
 
 </script>
 </html>
