@@ -227,6 +227,11 @@ BubbleChart.prototype.replaceSelectNode = function (d3Node, nodeData) {
         graph.removeSelectFromNode();
     }
     graph.state.selectedNode = nodeData;
+    graph.outerCircles.filter(function (cd) {
+        return cd.id === graph.state.selectedNode.id;
+    }).each(function (d, i) {
+        d3.select(this).select('circle').attr("r", d.radius + 20);
+    });
     graph.plusButtons.filter(function (cd) {
         return cd.id === graph.state.selectedNode.id;
     }).style("visibility", "visible");
@@ -243,6 +248,13 @@ BubbleChart.prototype.removeSelectFromNode = function () {
         .classed(graph.consts.selectedClass, false)
         .each(function (d, i) {
             graph.insertTitleLinebreaks(d3.select(this), d.label);
+        })
+    ;
+    graph.outerCircles.filter(function (cd) {
+        return cd.id === graph.state.selectedNode.id;
+    })
+        .each(function (d, i) {
+            d3.select(this).select('circle').attr("r", d.radius + 5);
         })
     ;
     graph.plusButtons.filter(function (cd) {
@@ -602,7 +614,7 @@ BubbleChart.prototype.updateGraph = function () {
             d3.select(this)
                 .append("circle")
                 .attr("r", function (d) {
-                    return d.radius + 20;
+                    return d.radius + 5;
                 })
                 .style("fill", function (d) {
                     return getLightColorForNode(d);
