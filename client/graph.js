@@ -77,8 +77,10 @@ let BubbleChart = function (svg, nodes, edges, allowZoom = false) {
             // todo check if edge-mode is selected
             let mouse = d3.mouse(this);
             let elem = document.elementFromPoint(mouse[0], mouse[1]);
-            if (graph.state.shiftNodeDrag) {
+            if (graph.state.shiftNodeDrag) {  // dragging edge
                 graph.dragEnd.call(graph, d3.select(this), graph.state.mouseEnterNode)
+            } else {
+                graph.circleMouseUp.call(graph, d3.select(this), d);
             }
             graph.onBubbleMoveListeners.forEach((func) => {
                 func(d);
@@ -617,7 +619,6 @@ BubbleChart.prototype.updateGraph = function () {
             return `translate(${d.x + 100},${d.y - 100})`;
         })
         .attr("click", function (d) {
-            console.log(`You clicked - me! ${d.id}`);
         })
     ;
     graph.plusButtons = plusButtons;
@@ -638,7 +639,6 @@ BubbleChart.prototype.updateGraph = function () {
             return `translate(${d.x - 100},${d.y - 100})`;
         })
         .attr("click", function (d) {
-            console.log(`You clicked - me! ${d.id}`);
         })
     ;
     graph.minusButtons = minusButtons;
