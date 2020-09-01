@@ -672,7 +672,7 @@ BubbleChart.prototype.updateGraph = function () {
         .append("g").merge(graph.plusButtons);
     plusButtons.classed('sizeButton', true)
         .attr("transform", function (d) {
-            return `translate(${d.x + 100},${d.y - 100})`;
+            return `translate(${d.x + 50},${d.y - 50})`;
         })
         .attr("click", function (d) {
         })
@@ -692,7 +692,7 @@ BubbleChart.prototype.updateGraph = function () {
         .append("g").merge(graph.minusButtons);
     minusButtons.classed('sizeButton', true)
         .attr("transform", function (d) {
-            return `translate(${d.x - 100},${d.y - 100})`;
+            return `translate(${d.x - 50},${d.y - 50})`;
         })
         .attr("click", function (d) {
         })
