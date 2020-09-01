@@ -230,7 +230,7 @@ BubbleChart.prototype.replaceSelectNode = function (d3Node, nodeData) {
     graph.outerCircles.filter(function (cd) {
         return cd.id === graph.state.selectedNode.id;
     }).each(function (d, i) {
-        d3.select(this).select('circle').attr("r", d.radius + 20);
+        d3.select(this).select('circle').attr("r", getSizeForNode(d) + 20);
     });
     graph.plusButtons.filter(function (cd) {
         return cd.id === graph.state.selectedNode.id;
@@ -254,7 +254,7 @@ BubbleChart.prototype.removeSelectFromNode = function () {
         return cd.id === graph.state.selectedNode.id;
     })
         .each(function (d, i) {
-            d3.select(this).select('circle').attr("r", d.radius + 5);
+            d3.select(this).select('circle').attr("r", getSizeForNode(d) + 5);
         })
     ;
     graph.plusButtons.filter(function (cd) {
@@ -475,6 +475,19 @@ BubbleChart.prototype.svgKeyUp = function () {
     this.state.lastKeyDown = -1;
 };
 
+function getSizeForNode(d) {
+    if (d.size === 'S') {
+        return 30;
+    } else if (d.size === 'M') {
+        return 50;
+    } else if (d.size === 'L') {
+        return 70;
+    } else {
+        return 5;
+    }
+}
+
+
 function getColorForNode(d) {
     if (d.category === 'PV') {
         return '#57A645';
@@ -614,7 +627,7 @@ BubbleChart.prototype.updateGraph = function () {
             d3.select(this)
                 .append("circle")
                 .attr("r", function (d) {
-                    return d.radius + 5;
+                    return getSizeForNode(d) + 5;
                 })
                 .style("fill", function (d) {
                     return getLightColorForNode(d);
@@ -654,7 +667,7 @@ BubbleChart.prototype.updateGraph = function () {
             d3.select(this)
                 .append("circle")
                 .attr("r", function (d) {
-                    return d.radius;
+                    return getSizeForNode(d);
                 })
                 .style("fill", function (d) {
                     return getColorForNode(d);
@@ -689,7 +702,7 @@ BubbleChart.prototype.updateGraph = function () {
                     return getColorForNode(d);
                 })
                 .style("stroke", function (d) {
-                    return getColorForNode(d);
+                    return getLightColorForNode(d);
                 })
             ;
             graph.insertTitleLinebreaks(d3.select(this), '+');
@@ -716,7 +729,7 @@ BubbleChart.prototype.updateGraph = function () {
                     return getColorForNode(d);
                 })
                 .style("stroke", function (d) {
-                    return getColorForNode(d);
+                    return getLightColorForNode(d);
                 })
             ;
             graph.insertTitleLinebreaks(d3.select(this), '-');

@@ -55,6 +55,7 @@ class Bubble:
     ycoord: int = field(default_factory=lambda: random.randint(50, 500))
     value: str = 'S'  # size
     bubble_id: int = field(init=False)
+    size: str = 'M'
 
     def __post_init__(self):
         self.bubble_id = next(self.bubble_cnt)
@@ -63,7 +64,7 @@ class Bubble:
         return {
             'id': self.bubble_id,
             'value': self.value,
-            'radius': 50,  # HACK
+            'size': self.size,  # HACK
             'label': self.topic,
             'title': self.description,
             'category': self.category,
@@ -93,8 +94,8 @@ class Relationship:
 
 NODES = [
     Bubble(topic='Hello'),
-    Bubble(topic='Hello Again', category='SD'),
-    Bubble(topic='Bonjour', category='HR'),
+    Bubble(topic='Hello Again', category='SD', size='S'),
+    Bubble(topic='Bonjour', category='HR', size='L'),
 ]  # fake database
 
 RELATIONSHIPS = [
