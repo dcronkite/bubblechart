@@ -58,10 +58,17 @@ marker {
     fill: #333;
 }
 
+g.sizeButton {
+    visibility: hidden;
+}
+
 g.sizeButton circle {
     fill: #F6FBFF;
     stroke: #333;
     stroke-width: 2px;
+}
+
+g.sizeButton text {
 }
 
 g.conceptG circle {

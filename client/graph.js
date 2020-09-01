@@ -223,6 +223,12 @@ BubbleChart.prototype.replaceSelectNode = function (d3Node, nodeData) {
         graph.removeSelectFromNode();
     }
     graph.state.selectedNode = nodeData;
+    graph.plusButtons.filter(function (cd) {
+        return cd.id === graph.state.selectedNode.id;
+    }).style("visibility", "visible");
+    graph.minusButtons.filter(function (cd) {
+        return cd.id === graph.state.selectedNode.id;
+    }).style("visibility", "visible");
 };
 
 BubbleChart.prototype.removeSelectFromNode = function () {
@@ -230,6 +236,12 @@ BubbleChart.prototype.removeSelectFromNode = function () {
     graph.circles.filter(function (cd) {
         return cd.id === graph.state.selectedNode.id;
     }).classed(graph.consts.selectedClass, false);
+    graph.plusButtons.filter(function (cd) {
+        return cd.id === graph.state.selectedNode.id;
+    }).style("visibility", "hidden");
+    graph.minusButtons.filter(function (cd) {
+        return cd.id === graph.state.selectedNode.id;
+    }).style("visibility", "hidden");
     graph.state.selectedNode = null;
 };
 
