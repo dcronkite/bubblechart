@@ -684,7 +684,14 @@ BubbleChart.prototype.updateGraph = function () {
                 .append("circle")
                 .attr("r", function (d) {
                     return 20;
-                });
+                })
+                .style("fill", function (d) {
+                    return getColorForNode(d);
+                })
+                .style("stroke", function (d) {
+                    return getColorForNode(d);
+                })
+            ;
             graph.insertTitleLinebreaks(d3.select(this), '+');
         }
     });
@@ -704,7 +711,14 @@ BubbleChart.prototype.updateGraph = function () {
                 .append("circle")
                 .attr("r", function (d) {
                     return 20;
-                });
+                })
+                .style("fill", function (d) {
+                    return getColorForNode(d);
+                })
+                .style("stroke", function (d) {
+                    return getColorForNode(d);
+                })
+            ;
             graph.insertTitleLinebreaks(d3.select(this), '-');
         }
     });
