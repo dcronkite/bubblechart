@@ -70,6 +70,10 @@ let BubbleChart = function (svg, nodes, edges, allowZoom = false) {
             return {x: d.x, y: d.y};
         })
         .on("start", function (d) {
+            if (graph.state.shiftNodeDrag) {  // dragging edge/relationship
+                // ignore all inner circles
+                graph.circles.style('pointer-events', 'none');
+            }
         })
         .on("drag", function (d) {
             graph.state.justDragged = true;
@@ -79,9 +83,10 @@ let BubbleChart = function (svg, nodes, edges, allowZoom = false) {
             // todo check if edge-mode is selected
             let mouse = d3.mouse(this);
             let elem = document.elementFromPoint(mouse[0], mouse[1]);
-            if (graph.state.shiftNodeDrag) {  // dragging edge
+            if (graph.state.shiftNodeDrag) {  // dragging edge/relationship
                 graph.dragEnd.call(graph, d3.select(this), graph.state.mouseEnterNode)
-            } else {
+                graph.circles.style('pointer-events', 'auto');
+            } else {  // dragging node/bubble
                 graph.circleMouseUp.call(graph, d3.select(this), d);
             }
             graph.onBubbleMoveListeners.forEach((func) => {

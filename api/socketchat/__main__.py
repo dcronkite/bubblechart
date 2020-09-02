@@ -1,5 +1,6 @@
 import itertools
 import math
+import pathlib
 import random
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta
@@ -19,8 +20,7 @@ TIME = datetime.now()
 
 @app.route('/')
 def index():
-    print('received')
-    emit('index_response', {'data': 'Server'})
+    return flask.render_template(str(pathlib.Path(__file__).parent.parent.parent.absolute() / 'client' / 'index.html'))
 
 
 @app.route('/login', methods=['POST'])
