@@ -60,6 +60,7 @@ let BubbleChart = function (svg, nodes, edges, allowZoom = false) {
 
     // svg nodes and edges
     graph.paths = svgG.append("g").selectAll("g");
+    graph.pathTrash = svgG.append("g").selectAll("g");
     graph.circles = svgG.append("g").selectAll("g");
     graph.outerCircles = svgG.append("g").selectAll("g");
     graph.plusButtons = svgG.append("g").selectAll("g");
@@ -215,6 +216,7 @@ BubbleChart.prototype.addIcon = function (gEl, iconUnicode) {
         .attr('dominant-baseline', 'central')
         .attr('class', 'fa')
         .attr('font-size', '20px')
+        .attr('fill', '#FFFFFF')
         .text(function () {
             return iconUnicode;
         });
@@ -235,6 +237,10 @@ BubbleChart.prototype.spliceLinksForNode = function (node) {
 BubbleChart.prototype.replaceSelectEdge = function (d3Path, edgeData) {
     let graph = this;
     d3Path.classed(graph.consts.selectedClass, true);
+    graph.pathTrash.filter(function (cd) {
+        console.log(cd, edgeData);
+        return cd === edgeData;
+    }).style("visibility", "visible");
     if (graph.state.selectedEdge) {
         graph.removeSelectFromEdge();
     }
@@ -299,6 +305,10 @@ BubbleChart.prototype.removeSelectFromEdge = function () {
     graph.paths.filter(function (cd) {
         return cd === graph.state.selectedEdge;
     }).classed(graph.consts.selectedClass, false);
+    graph.pathTrash.filter(function (cd) {
+        console.log('remove select', cd, graph.state.selectedEdge);
+        return cd === graph.state.selectedEdge;
+    }).style("visibility", "hidden");
     graph.state.selectedEdge = null;
 };
 
@@ -584,7 +594,9 @@ function getSizeForNode(d) {
 
 
 function getColorForNode(d) {
-    if (d.category === 'PV') {
+    if (d.category === undefined || d.category === null) {
+        return '#000000';
+    } else if (d.category === 'PV') {
         return '#57A645';
     } else if (d.category === 'SD') {
         return '#D36B12';
@@ -596,7 +608,9 @@ function getColorForNode(d) {
 }
 
 function getLightColorForNode(d) {
-    if (d.category === 'PV') {
+    if (d.category === undefined || d.category === null) {
+        return '#000000';
+    } else if (d.category === 'PV') {
         return '#BBF2AE';
     } else if (d.category === 'SD') {
         return '#DB9455';
@@ -647,11 +661,22 @@ BubbleChart.prototype.updateGraph = function () {
             // state.mouseDownLink = null;
         })
         .on("mousedown", function (d) {
-                graph.pathMouseDown.call(graph, d3.select(this), d);
-            }
-        );
-
+            graph.pathMouseDown.call(graph, d3.select(this), d);
+        })
+    ;
     graph.paths = paths;
+
+    graph.pathTrash = graph.pathTrash.data(graph.edges, function (d) {
+        return String(d.source) + "+" + String(d.target);
+    });
+    graph.pathTrash.exit().remove();
+    graph.pathTrash = graph.buildButtons(
+        graph.pathTrash,
+        d => (graph.getBubbleById(d.source).x + graph.getBubbleById(d.target).x) / 2,
+        d => (graph.getBubbleById(d.source).y + graph.getBubbleById(d.target).y) / 2,
+        '\uf1f8',
+        graph.deleteEdge
+    );
 
     // update existing nodes
     graph.outerCircles = graph.outerCircles.data(graph.nodes, function (d) {
@@ -854,6 +879,10 @@ BubbleChart.prototype.addNode = function (node) {
 
 BubbleChart.prototype.deleteNode = function (node, d) {
     console.log('delete nod', d);
+}
+
+BubbleChart.prototype.deleteEdge = function (node, d) {
+    console.log('delete edge', d);
 }
 
 BubbleChart.prototype.createEdge = function (source, target) {
