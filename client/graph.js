@@ -64,6 +64,7 @@ let BubbleChart = function (svg, nodes, edges, allowZoom = false) {
     graph.outerCircles = svgG.append("g").selectAll("g");
     graph.plusButtons = svgG.append("g").selectAll("g");
     graph.minusButtons = svgG.append("g").selectAll("g");
+    graph.trashButtons = svgG.append("g").selectAll("g");
 
     graph.drag = d3.drag()
         .subject(function (d) {
@@ -193,7 +194,7 @@ BubbleChart.prototype.selectElementContents = function (el) {
 BubbleChart.prototype.insertTitleLinebreaks = function (gEl, title) {
     let words = title.split(/\s+/g),
         nwords = words.length;
-    gEl.select("text").remove()
+    gEl.select("text").remove();
     let el = gEl.append("text")
         .attr("text-anchor", "middle")
         .attr("dy", "-" + (nwords - 1) * 7.5);
@@ -204,6 +205,20 @@ BubbleChart.prototype.insertTitleLinebreaks = function (gEl, title) {
             tspan.attr('x', 0).attr('dy', '15');
     }
 };
+
+
+BubbleChart.prototype.addIcon = function (gEl, iconUnicode) {
+    // for fontawesome cheatsheet: https://fontawesome.com/cheatsheet?from=io
+    gEl.select('text').remove();
+    let el = gEl.append('text')
+        .attr('text-anchor', 'middle')
+        .attr('dominant-baseline', 'central')
+        .attr('class', 'fa')
+        .attr('font-size', '20px')
+        .text(function () {
+            return iconUnicode;
+    });
+}
 
 
 // remove edges associated with a node
@@ -645,12 +660,16 @@ BubbleChart.prototype.updateGraph = function () {
     graph.plusButtons = graph.plusButtons.data(graph.nodes, function (d) {
         return d.id;
     });
+    graph.trashButtons = graph.trashButtons.data(graph.nodes, function (d) {
+        return d.id;
+    });
 
     // remove old nodes
     graph.outerCircles.exit().remove();
     graph.circles.exit().remove();
     graph.minusButtons.exit().remove();
     graph.plusButtons.exit().remove();
+    graph.trashButtons.exit().remove();
 
     graph.outerCircles.attr("transform", function (d) {
         return `translate(${d.x},${d.y})`;
@@ -667,6 +686,9 @@ BubbleChart.prototype.updateGraph = function () {
 
     graph.plusButtons.attr("transform", function (d) {
         return `translate(${d.x + 50},${d.y - 50})`;
+    });
+    graph.trashButtons.attr("transform", function (d) {
+        return `translate(${d.x},${d.y + 71})`;
     });
 
     // add new nodes
@@ -780,7 +802,7 @@ BubbleChart.prototype.updateGraph = function () {
                     return getLightColorForNode(d);
                 })
             ;
-            graph.insertTitleLinebreaks(d3.select(this), '+');
+            graph.addIcon(d3.select(this), '\uf067');
         }
     });
     let minusButtons = graph.minusButtons.enter()
@@ -808,7 +830,36 @@ BubbleChart.prototype.updateGraph = function () {
                     return getLightColorForNode(d);
                 })
             ;
-            graph.insertTitleLinebreaks(d3.select(this), '-');
+            graph.addIcon(d3.select(this), '\uf068');
+        }
+    });
+
+    let trashButtons = graph.trashButtons.enter()
+        .append("g").merge(graph.trashButtons);
+    minusButtons.classed('sizeButton', true)
+        .attr("transform", function (d) {
+            return `translate(${d.x - 50},${d.y - 50})`;
+        })
+        .on("click", function (d) {
+            graph.decreaseBubbleSize.call(graph, d3.select(this), d);
+        })
+    ;
+    graph.trashButtons = trashButtons;
+    trashButtons.each(function (d) {
+        if (this.childNodes.length === 0) {
+            d3.select(this)
+                .append("circle")
+                .attr("r", function (d) {
+                    return 20;
+                })
+                .style("fill", function (d) {
+                    return getColorForNode(d);
+                })
+                .style("stroke", function (d) {
+                    return getLightColorForNode(d);
+                })
+            ;
+            graph.addIcon(d3.select(this), '\uf1f8');
         }
     });
 
