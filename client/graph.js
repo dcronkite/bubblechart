@@ -260,6 +260,9 @@ BubbleChart.prototype.replaceSelectNode = function (d3Node, nodeData) {
     graph.minusButtons.filter(function (cd) {
         return cd.id === graph.state.selectedNode.id;
     }).style("visibility", "visible");
+    graph.trashButtons.filter(function (cd) {
+        return cd.id === graph.state.selectedNode.id;
+    }).style("visibility", "visible");
 };
 
 BubbleChart.prototype.removeSelectFromNode = function () {
@@ -283,6 +286,9 @@ BubbleChart.prototype.removeSelectFromNode = function () {
         return cd.id === graph.state.selectedNode.id;
     }).style("visibility", "hidden");
     graph.minusButtons.filter(function (cd) {
+        return cd.id === graph.state.selectedNode.id;
+    }).style("visibility", "hidden");
+    graph.trashButtons.filter(function (cd) {
         return cd.id === graph.state.selectedNode.id;
     }).style("visibility", "hidden");
     graph.state.selectedNode = null;
@@ -682,8 +688,6 @@ BubbleChart.prototype.updateGraph = function () {
     graph.minusButtons.attr("transform", function (d) {
         return `translate(${d.x - 50},${d.y - 50})`;
     });
-
-
     graph.plusButtons.attr("transform", function (d) {
         return `translate(${d.x + 50},${d.y - 50})`;
     });
@@ -805,6 +809,7 @@ BubbleChart.prototype.updateGraph = function () {
             graph.addIcon(d3.select(this), '\uf067');
         }
     });
+
     let minusButtons = graph.minusButtons.enter()
         .append("g").merge(graph.minusButtons);
     minusButtons.classed('sizeButton', true)
@@ -836,12 +841,12 @@ BubbleChart.prototype.updateGraph = function () {
 
     let trashButtons = graph.trashButtons.enter()
         .append("g").merge(graph.trashButtons);
-    minusButtons.classed('sizeButton', true)
+    trashButtons.classed('sizeButton', true)
         .attr("transform", function (d) {
-            return `translate(${d.x - 50},${d.y - 50})`;
+            return `translate(${d.x},${d.y + 71})`;
         })
         .on("click", function (d) {
-            graph.decreaseBubbleSize.call(graph, d3.select(this), d);
+            graph.deleteNode.call(graph, d3.select(this), d);
         })
     ;
     graph.trashButtons = trashButtons;
@@ -881,6 +886,10 @@ BubbleChart.prototype.updateWindow = function () {
 
 BubbleChart.prototype.addNode = function (node) {
     this.nodes.push(node);
+}
+
+BubbleChart.prototype.deleteNode = function(node, d) {
+    console.log('delete nod', d);
 }
 
 BubbleChart.prototype.createEdge = function (source, target) {
