@@ -780,95 +780,41 @@ BubbleChart.prototype.updateGraph = function () {
         }
     });
 
-    // add plus/minus buttons
-    let plusButtons = graph.plusButtons.enter()
-        .append("g").merge(graph.plusButtons);
-    plusButtons.classed('sizeButton', true)
-        .attr("transform", function (d) {
-            return `translate(${d.x + 50},${d.y - 50})`;
-        })
-        .on("click", function (d) {
-            graph.increaseBubbleSize.call(graph, d3.select(this), d);
-        })
-    ;
-    graph.plusButtons = plusButtons;
-    plusButtons.each(function (d) {
-        if (this.childNodes.length === 0) {
-            d3.select(this)
-                .append("circle")
-                .attr("r", function (d) {
-                    return 20;
-                })
-                .style("fill", function (d) {
-                    return getColorForNode(d);
-                })
-                .style("stroke", function (d) {
-                    return getLightColorForNode(d);
-                })
-            ;
-            graph.addIcon(d3.select(this), '\uf067');
-        }
-    });
-
-    let minusButtons = graph.minusButtons.enter()
-        .append("g").merge(graph.minusButtons);
-    minusButtons.classed('sizeButton', true)
-        .attr("transform", function (d) {
-            return `translate(${d.x - 50},${d.y - 50})`;
-        })
-        .on("click", function (d) {
-            graph.decreaseBubbleSize.call(graph, d3.select(this), d);
-        })
-    ;
-    graph.minusButtons = minusButtons;
-    minusButtons.each(function (d) {
-        if (this.childNodes.length === 0) {
-            d3.select(this)
-                .append("circle")
-                .attr("r", function (d) {
-                    return 20;
-                })
-                .style("fill", function (d) {
-                    return getColorForNode(d);
-                })
-                .style("stroke", function (d) {
-                    return getLightColorForNode(d);
-                })
-            ;
-            graph.addIcon(d3.select(this), '\uf068');
-        }
-    });
-
-    let trashButtons = graph.trashButtons.enter()
-        .append("g").merge(graph.trashButtons);
-    trashButtons.classed('sizeButton', true)
-        .attr("transform", function (d) {
-            return `translate(${d.x},${d.y + 71})`;
-        })
-        .on("click", function (d) {
-            graph.deleteNode.call(graph, d3.select(this), d);
-        })
-    ;
-    graph.trashButtons = trashButtons;
-    trashButtons.each(function (d) {
-        if (this.childNodes.length === 0) {
-            d3.select(this)
-                .append("circle")
-                .attr("r", function (d) {
-                    return 20;
-                })
-                .style("fill", function (d) {
-                    return getColorForNode(d);
-                })
-                .style("stroke", function (d) {
-                    return getLightColorForNode(d);
-                })
-            ;
-            graph.addIcon(d3.select(this), '\uf1f8');
-        }
-    });
-
+    graph.plusButtons = graph.buildButtons(graph.plusButtons, 50, -50,'\uf067', graph.increaseBubbleSize);
+    graph.minusButtons = graph.buildButtons(graph.minusButtons, -50, -50,'\uf068', graph.decreaseBubbleSize);
+    graph.trashButtons = graph.buildButtons(graph.trashButtons, 0, 71,'\uf1f8', graph.deleteNode);
 };
+
+BubbleChart.prototype.buildButtons = function (graphButtons, xoffset, yoffset, unicodeIcon, func) {
+    let buttons = graphButtons.enter()
+        .append("g").merge(graphButtons);
+    buttons.classed('sizeButton', true)
+        .attr("transform", function (d) {
+            return `translate(${d.x + xoffset},${d.y + yoffset})`;
+        })
+        .on("click", function (d) {
+            func.call(graph, d3.select(this), d);
+        })
+    ;
+    buttons.each(function (d) {
+        if (this.childNodes.length === 0) {
+            d3.select(this)
+                .append("circle")
+                .attr("r", function (d) {
+                    return 20;
+                })
+                .style("fill", function (d) {
+                    return getColorForNode(d);
+                })
+                .style("stroke", function (d) {
+                    return getLightColorForNode(d);
+                })
+            ;
+            graph.addIcon(d3.select(this), unicodeIcon);
+        }
+    });
+    return buttons;
+}
 
 BubbleChart.prototype.zoomed = function () {
     this.state.justScaleTransGraph = true;
