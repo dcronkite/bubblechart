@@ -217,7 +217,7 @@ BubbleChart.prototype.addIcon = function (gEl, iconUnicode) {
         .attr('font-size', '20px')
         .text(function () {
             return iconUnicode;
-    });
+        });
 }
 
 
@@ -780,9 +780,27 @@ BubbleChart.prototype.updateGraph = function () {
         }
     });
 
-    graph.plusButtons = graph.buildButtons(graph.plusButtons, 50, -50,'\uf067', graph.increaseBubbleSize);
-    graph.minusButtons = graph.buildButtons(graph.minusButtons, -50, -50,'\uf068', graph.decreaseBubbleSize);
-    graph.trashButtons = graph.buildButtons(graph.trashButtons, 0, 71,'\uf1f8', graph.deleteNode);
+    graph.plusButtons = graph.buildButtons(
+        graph.plusButtons,
+        d => d.x + getSizeForNode(d) + 5,
+        d => d.y - getSizeForNode(d) - 5,
+        '\uf067',
+        graph.increaseBubbleSize
+    );
+    graph.minusButtons = graph.buildButtons(
+        graph.minusButtons,
+        d => d.x - getSizeForNode(d) - 5,
+        d => d.y - getSizeForNode(d) - 5,
+        '\uf068',
+        graph.decreaseBubbleSize
+    );
+    graph.trashButtons = graph.buildButtons(
+        graph.trashButtons,
+        d => d.x,
+        d => d.y + Math.floor((getSizeForNode(d) + 5) * 1.4),
+        '\uf1f8',
+        graph.deleteNode
+    );
 };
 
 BubbleChart.prototype.buildButtons = function (graphButtons, xoffset, yoffset, unicodeIcon, func) {
@@ -790,7 +808,7 @@ BubbleChart.prototype.buildButtons = function (graphButtons, xoffset, yoffset, u
         .append("g").merge(graphButtons);
     buttons.classed('sizeButton', true)
         .attr("transform", function (d) {
-            return `translate(${d.x + xoffset},${d.y + yoffset})`;
+            return `translate(${xoffset(d)},${yoffset(d)})`;
         })
         .on("click", function (d) {
             func.call(graph, d3.select(this), d);
@@ -834,7 +852,7 @@ BubbleChart.prototype.addNode = function (node) {
     this.nodes.push(node);
 }
 
-BubbleChart.prototype.deleteNode = function(node, d) {
+BubbleChart.prototype.deleteNode = function (node, d) {
     console.log('delete nod', d);
 }
 
