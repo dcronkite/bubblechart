@@ -139,7 +139,7 @@ RELATIONSHIPS = [
 @cross_origin()
 def get_nodes():
     return {
-        'data': [n.to_json() for n in NODES if n.highlighted]
+        'data': [n.to_json() for n in NODES]
     }
 
 
@@ -153,7 +153,6 @@ def get_relationships():
 
 @socketio.on('add relationship')
 def add_relationship(json_data):
-    print(json_data)
     new_relationship = Relationship(**json_data)
     RELATIONSHIPS.append(new_relationship)
     emit('add relationship', new_relationship.to_json(), broadcast=True)
@@ -169,9 +168,17 @@ def delete_node(json_data):
     for node in NODES:
         if node.bubble_id == json_data['id']:
             node.highlighted = False
+            delete_edges_for_node(node.bubble_id)
             break
-    print(json_data, node)
     emit('delete node', json_data, broadcast=True)
+
+
+def delete_edges_for_node(node_id):
+    global RELATIONSHIPS
+    n_before = len(RELATIONSHIPS)
+    RELATIONSHIPS = [r for r in RELATIONSHIPS if r.source == node_id or r.target == node_id]
+    n_after = len(RELATIONSHIPS)
+    print(f'Removed {n_before - n_after} relationships; currently {n_after}')
 
 
 @socketio.on('delete edge')

@@ -632,6 +632,7 @@ BubbleChart.prototype.updateGraph = function () {
         consts = graph.consts,
         state = graph.state;
 
+    graph.edges = graph.edges.filter(d => !(d.source in graph.deletedNodes) && !(d.target in graph.deletedNodes))
     graph.paths = graph.paths.data(graph.edges, function (d) {
         return String(d.source) + "+" + String(d.target);
     });
@@ -878,7 +879,11 @@ BubbleChart.prototype.updateWindow = function () {
 };
 
 BubbleChart.prototype.addNode = function (node) {
-    this.nodes.push(node);
+    if (node.highlighted) {
+        this.nodes.push(node);
+    } else {
+        this.deletedNodes[node.id] = node;
+    }
 }
 
 BubbleChart.prototype.signalDeleteNode = function (node, d) {
@@ -887,8 +892,8 @@ BubbleChart.prototype.signalDeleteNode = function (node, d) {
     });
 }
 
-BubbleChart.prototype.removeItemWithId = function(list, id, targetList) {
-    for (let i=list.length - 1; i >= 0; i--) {
+BubbleChart.prototype.removeItemWithId = function (list, id, targetList) {
+    for (let i = list.length - 1; i >= 0; i--) {
         if (list[i].id === id) {
             if (targetList) {
                 targetList[list[i].id] = list[i];

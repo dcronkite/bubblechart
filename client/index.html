@@ -164,7 +164,7 @@
         }).then(response => response.json())
             .then(data => {
                 data['data'].forEach((newNode) => addNode(newNode));
-            }).then(() => graph.updateGraph());
+            }).then(() => getRelationships());
     }
 
     function getRelationships() {
@@ -177,7 +177,6 @@
     }
 
     getNodes();
-    getRelationships();
 
     function bubbleMoved(bubble) {
         socket.emit('bubble moved', {
