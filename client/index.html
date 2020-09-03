@@ -136,6 +136,18 @@
             'username': username,
         });
     });
+    graph.addOnDeleteNodeListener((bubble) => {
+        socket.emit('delete node', {
+            'id': bubble.id,
+            'username': username,
+        });
+    });
+    graph.addOnDeleteEdgeListener((edge) => {
+        socket.emit('delete edge', {
+            'id': edge.id,
+            'username': username,
+        });
+    });
 
 
     function addNode(node) {
@@ -207,6 +219,14 @@
     socket.on('add relationship', function (data) {
         addEdge(data);
         graph.updateGraph();
+    });
+    socket.on('delete edge', function (data) {
+        graph.deleteEdge(data['id']);
+    });
+
+    socket.on('delete node', function (data) {
+        console.log('delete me');
+        graph.deleteNode(data['id']);
     });
 
     socket.on('bubble selected', function (data) {

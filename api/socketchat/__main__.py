@@ -50,7 +50,7 @@ class Bubble:
     topic: str
     description: str = 'No description'
     category: str = 'PV'
-    highlighted: bool = False
+    highlighted: bool = True
     xcoord: int = field(default_factory=lambda: random.randint(50, 500))
     ycoord: int = field(default_factory=lambda: random.randint(50, 500))
     value: str = 'S'  # size
@@ -64,7 +64,7 @@ class Bubble:
         return {
             'id': self.bubble_id,
             'value': self.value,
-            'size': self.size,  # HACK
+            'size': self.size,
             'label': self.topic,
             'title': self.description,
             'category': self.category,
@@ -96,6 +96,38 @@ NODES = [
     Bubble(topic='Hello'),
     Bubble(topic='Hello Again', category='SD', size='S'),
     Bubble(topic='Bonjour', category='HR', size='L'),
+    Bubble(topic='Hello', category='HR', size='L'),
+    Bubble(topic='ʔi, syaʔyaʔ', category='HR'),
+    Bubble(topic='Türü medjü', size='L'),
+    Bubble(topic='扎西德勒', category='SD', size='L'),
+    Bubble(topic='Bonjour'),
+    Bubble(topic='안녕하싴콰'),
+    Bubble(topic='!Ka tseya?'),
+    Bubble(topic='Hola', category='SD'),
+    Bubble(topic='Hei', category='HR'),
+    Bubble(topic='Moi'),
+    Bubble(topic='Terve', category='SD', size='S'),
+    Bubble(topic='Hallo', size='S'),
+    Bubble(topic='መዓልኩም', category='SD'),
+    Bubble(topic='Aloha', size='L'),
+    Bubble(topic='Фэсапщи', size='S'),
+    Bubble(topic='Tata bini', category='SD'),
+    Bubble(topic='Oro', category='HR', size='L'),
+    Bubble(topic='Fo'),
+    Bubble(topic='Χαίρετε'),
+    Bubble(topic='Γεια', category='SD', size='S'),
+    Bubble(topic='سَّلام', category='HR'),
+    Bubble(topic='שלמה'),
+    Bubble(topic='བཀྲ་ཤིས་བདེ་ལེགས།', category='SD'),
+    Bubble(topic='أَهْلاً'),
+    Bubble(topic='nder momo', size='S'),
+    Bubble(topic='Miiŋa bo', category='SD', size='S'),
+    Bubble(topic='Салaм', category='HR', size='L'),
+    Bubble(topic='प्रणाम।'),
+    Bubble(topic='こんにちは。', category='SD'),
+    Bubble(topic='Assalamu\'alaikum'),
+    Bubble(topic='Hello Again', category='SD', size='S'),
+    Bubble(topic='Bonjour', category='HR', size='L'),
 ]  # fake database
 
 RELATIONSHIPS = [
@@ -107,7 +139,7 @@ RELATIONSHIPS = [
 @cross_origin()
 def get_nodes():
     return {
-        'data': [n.to_json() for n in NODES]
+        'data': [n.to_json() for n in NODES if n.highlighted]
     }
 
 
@@ -130,6 +162,23 @@ def add_relationship(json_data):
 @socketio.on('bubble moving')
 def bubble_moving(json_data):
     emit('bubble moving', json_data, broadcast=True)
+
+
+@socketio.on('delete node')
+def delete_node(json_data):
+    for node in NODES:
+        if node.bubble_id == json_data['id']:
+            node.highlighted = False
+            break
+    print(json_data, node)
+    emit('delete node', json_data, broadcast=True)
+
+
+@socketio.on('delete edge')
+def delete_edge(json_data):
+    global RELATIONSHIPS
+    RELATIONSHIPS = [r for r in RELATIONSHIPS if r.relation_id != json_data['id']]
+    emit('delete edge', json_data, broadcast=True)
 
 
 def update_node_position(bid, x, y):

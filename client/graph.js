@@ -4,12 +4,15 @@ let BubbleChart = function (svg, nodes, edges, allowZoom = false) {
     graph.idct = 0;
 
     graph.nodes = nodes || [];
+    graph.deletedNodes = {};
     graph.edges = edges || [];
     graph.onBubbleMoveListeners = [];
     graph.onBubbleMovingListeners = [];
     graph.onRelationshipCreatedListeners = [];
     graph.onBubbleSizeChangeListener = [];
     graph.onBubbleSelectedListener = [];
+    graph.onDeleteNodeListener = [];
+    graph.onDeleteEdgeListener = [];
 
     graph.state = {
         previousEnterNode: null,  // previous outer circle that was entered
@@ -240,7 +243,6 @@ BubbleChart.prototype.replaceSelectEdge = function (d3Path, edgeData) {
     let graph = this;
     d3Path.classed(graph.consts.selectedClass, true);
     graph.pathTrash.filter(function (cd) {
-        console.log(cd, edgeData);
         return cd === edgeData;
     }).style("visibility", "visible");
     if (graph.state.selectedEdge) {
@@ -309,7 +311,6 @@ BubbleChart.prototype.removeSelectFromEdge = function () {
         return cd === graph.state.selectedEdge;
     }).classed(graph.consts.selectedClass, false);
     graph.pathTrash.filter(function (cd) {
-        console.log('remove select', cd, graph.state.selectedEdge);
         return cd === graph.state.selectedEdge;
     }).style("visibility", "hidden");
     graph.state.selectedEdge = null;
@@ -678,7 +679,7 @@ BubbleChart.prototype.updateGraph = function () {
         d => (graph.getBubbleById(d.source).x + graph.getBubbleById(d.target).x) / 2,
         d => (graph.getBubbleById(d.source).y + graph.getBubbleById(d.target).y) / 2,
         '\uf1f8',
-        graph.deleteEdge
+        graph.signalDeleteEdge
     );
 
     // update existing nodes
@@ -827,7 +828,7 @@ BubbleChart.prototype.updateGraph = function () {
         d => d.x,
         d => d.y - Math.floor((getSizeForNode(d) + 20)),
         '\uf1f8',
-        graph.deleteNode
+        graph.signalDeleteNode
     );
 };
 
@@ -880,19 +881,45 @@ BubbleChart.prototype.addNode = function (node) {
     this.nodes.push(node);
 }
 
-BubbleChart.prototype.deleteNode = function (node, d) {
-    console.log('delete nod', d);
+BubbleChart.prototype.signalDeleteNode = function (node, d) {
+    graph.onDeleteNodeListener.forEach((func) => {
+        func(d);
+    });
 }
 
-BubbleChart.prototype.deleteEdge = function (node, d) {
-    console.log('delete edge', d);
+BubbleChart.prototype.removeItemWithId = function(list, id, targetList) {
+    for (let i=list.length - 1; i >= 0; i--) {
+        if (list[i].id === id) {
+            if (targetList) {
+                targetList[list[i].id] = list[i];
+            }
+            list.splice(i, 1);
+        }
+    }
+    return list;
+}
+
+BubbleChart.prototype.deleteNode = function (id) {
+    graph.nodes = this.removeItemWithId(graph.nodes, id, graph.deletedNodes);
+    graph.edges = graph.edges.filter(d => !(d.source in graph.deletedNodes) && !(d.target in graph.deletedNodes))
+    this.updateGraph();
+}
+
+BubbleChart.prototype.deleteEdge = function (id) {
+    graph.edges = this.removeItemWithId(graph.edges, id);
+    this.updateGraph();
+}
+
+BubbleChart.prototype.signalDeleteEdge = function (node, d) {
+    graph.onDeleteEdgeListener.forEach((func) => {
+        func(d);
+    });
 }
 
 BubbleChart.prototype.createEdge = function (source, target) {
     this.onRelationshipCreatedListeners.forEach((listener) => {
         listener(source, target);
     });
-    // this.edges.push({'source': source, 'target': target});
 }
 
 BubbleChart.prototype.addEdge = function (edge) {
@@ -917,6 +944,12 @@ BubbleChart.prototype.addOnBubbleSizeChangeListener = function (listener) {
 }
 BubbleChart.prototype.addOnBubbleSelectedListener = function (listener) {
     this.onBubbleSelectedListener.push(listener);
+}
+BubbleChart.prototype.addOnDeleteNodeListener = function (listener) {
+    this.onDeleteNodeListener.push(listener);
+}
+BubbleChart.prototype.addOnDeleteEdgeListener = function (listener) {
+    this.onDeleteEdgeListener.push(listener);
 }
 
 
