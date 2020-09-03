@@ -198,8 +198,10 @@ BubbleChart.prototype.insertTitleLinebreaks = function (gEl, title) {
     gEl.select("text").remove();
     let el = gEl.append("text")
         .attr("text-anchor", "middle")
-        .attr("dy", "-" + (nwords - 1) * 7.5);
-
+        .attr("dy", "-" + (nwords - 1) * 7.5)
+        .style('font-family', 'Barlow')
+        .style('font-size', 20)
+    ;
     for (let i = 0; i < words.length; i++) {
         let tspan = el.append('tspan').text(words[i]);
         if (i > 0)
@@ -250,7 +252,8 @@ BubbleChart.prototype.replaceSelectEdge = function (d3Path, edgeData) {
 BubbleChart.prototype.replaceSelectNode = function (d3Node, nodeData) {
     let graph = this;
     d3Node.classed(this.consts.selectedClass, true);
-    graph.insertTitleLinebreaks(d3Node, nodeData.title);
+    // graph.insertTitleLinebreaks(d3Node, nodeData.title);  // show description
+    graph.insertTitleLinebreaks(d3Node, nodeData.label);  // show label/header
     if (graph.state.selectedNode) {
         graph.removeSelectFromNode();
     }
@@ -582,11 +585,11 @@ BubbleChart.prototype.svgKeyUp = function () {
 
 function getSizeForNode(d) {
     if (d.size === 'S') {
-        return 30;
+        return 40;
     } else if (d.size === 'M') {
-        return 50;
+        return 60;
     } else if (d.size === 'L') {
-        return 70;
+        return 80;
     } else {
         return 5;
     }
@@ -597,25 +600,25 @@ function getColorForNode(d) {
     if (d.category === undefined || d.category === null) {
         return '#000000';
     } else if (d.category === 'PV') {
-        return '#57A645';
+        return '#F4FAF3';
     } else if (d.category === 'SD') {
-        return '#D36B12';
+        return '#FDF6EF';
     } else if (d.category === 'HR') {
-        return '#087DC3';
+        return '#EDF8FE';
     } else {
         return '#000000';
     }
 }
 
-function getLightColorForNode(d) {
+function getColorForOuterNode(d) {
     if (d.category === undefined || d.category === null) {
         return '#000000';
     } else if (d.category === 'PV') {
-        return '#BBF2AE';
+        return '#57A645';
     } else if (d.category === 'SD') {
-        return '#DB9455';
+        return '#D36B12';
     } else if (d.category === 'HR') {
-        return '#459BCC';
+        return '#087DC3';
     } else {
         return '#FFFFFF';
     }
@@ -755,10 +758,10 @@ BubbleChart.prototype.updateGraph = function () {
                     return getSizeForNode(d) + 5;
                 })
                 .style("fill", function (d) {
-                    return getLightColorForNode(d);
+                    return getColorForOuterNode(d);
                 })
                 .style("stroke", function (d) {
-                    return getLightColorForNode(d);
+                    return getColorForOuterNode(d);
                 })
             ;
         }
@@ -807,22 +810,22 @@ BubbleChart.prototype.updateGraph = function () {
 
     graph.plusButtons = graph.buildButtons(
         graph.plusButtons,
-        d => d.x + getSizeForNode(d) + 5,
-        d => d.y - getSizeForNode(d) - 5,
+        d => d.x + Math.floor((getSizeForNode(d) + 20) * 0.87),
+        d => d.y + Math.floor((getSizeForNode(d) + 20) / 2),
         '\uf067',
         graph.increaseBubbleSize
     );
     graph.minusButtons = graph.buildButtons(
         graph.minusButtons,
-        d => d.x - getSizeForNode(d) - 5,
-        d => d.y - getSizeForNode(d) - 5,
+        d => d.x - Math.floor((getSizeForNode(d) + 20) * 0.87),
+        d => d.y + Math.floor((getSizeForNode(d) + 20) / 2),
         '\uf068',
         graph.decreaseBubbleSize
     );
     graph.trashButtons = graph.buildButtons(
         graph.trashButtons,
         d => d.x,
-        d => d.y + Math.floor((getSizeForNode(d) + 5) * 1.4),
+        d => d.y - Math.floor((getSizeForNode(d) + 20)),
         '\uf1f8',
         graph.deleteNode
     );
@@ -847,10 +850,10 @@ BubbleChart.prototype.buildButtons = function (graphButtons, xoffset, yoffset, u
                     return 20;
                 })
                 .style("fill", function (d) {
-                    return getColorForNode(d);
+                    return getColorForOuterNode(d);
                 })
                 .style("stroke", function (d) {
-                    return getLightColorForNode(d);
+                    return getColorForNode(d);
                 })
             ;
             graph.addIcon(d3.select(this), unicodeIcon);
