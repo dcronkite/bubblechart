@@ -176,9 +176,9 @@ def delete_node(json_data):
 def delete_edges_for_node(node_id):
     global RELATIONSHIPS
     n_before = len(RELATIONSHIPS)
-    RELATIONSHIPS = [r for r in RELATIONSHIPS if r.source == node_id or r.target == node_id]
+    RELATIONSHIPS = [r for r in RELATIONSHIPS if r.source != node_id and r.target != node_id]
     n_after = len(RELATIONSHIPS)
-    print(f'Removed {n_before - n_after} relationships; currently {n_after}')
+    print(f'Deleted node #{node_id}: Removed {n_before - n_after} relationships; currently {n_after}')
 
 
 @socketio.on('delete edge')
