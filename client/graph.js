@@ -195,7 +195,7 @@ BubbleChart.prototype.selectElementContents = function (el) {
 
 
 /* insert svg line breaks: taken from http://stackoverflow.com/questions/13241475/how-do-i-include-newlines-in-labels-in-d3-charts */
-BubbleChart.prototype.insertTitleLinebreaks = function (gEl, title) {
+BubbleChart.prototype.insertTitleLinebreaks = function (gEl, title, fontsize) {
     let words = title.split(/\s+/g),
         nwords = words.length;
     gEl.select("text").remove();
@@ -203,12 +203,12 @@ BubbleChart.prototype.insertTitleLinebreaks = function (gEl, title) {
         .attr("text-anchor", "middle")
         .attr("dy", "-" + (nwords - 1) * 7.5)
         .style('font-family', 'Barlow')
-        .style('font-size', 20)
+        .style('font-size', fontsize)
     ;
     for (let i = 0; i < words.length; i++) {
         let tspan = el.append('tspan').text(words[i]);
         if (i > 0)
-            tspan.attr('x', 0).attr('dy', '15');
+            tspan.attr('x', 0).attr('dy', fontsize);
     }
 };
 
@@ -255,7 +255,7 @@ BubbleChart.prototype.replaceSelectNode = function (d3Node, nodeData) {
     let graph = this;
     d3Node.classed(this.consts.selectedClass, true);
     // graph.insertTitleLinebreaks(d3Node, nodeData.title);  // show description
-    graph.insertTitleLinebreaks(d3Node, nodeData.label);  // show label/header
+    graph.insertTitleLinebreaks(d3Node, nodeData.label, getFontSizeForNode(nodeData));  // show label/header
     if (graph.state.selectedNode) {
         graph.removeSelectFromNode();
     }
@@ -263,7 +263,7 @@ BubbleChart.prototype.replaceSelectNode = function (d3Node, nodeData) {
     graph.outerCircles.filter(function (cd) {
         return cd.id === graph.state.selectedNode.id;
     }).each(function (d, i) {
-        d3.select(this).select('circle').attr("r", getSizeForNode(d) + 20);
+        d3.select(this).select('circle').attr("r", getSizeForNode(d) + 15);
     });
     graph.plusButtons.filter(function (cd) {
         return cd.id === graph.state.selectedNode.id;
@@ -283,14 +283,14 @@ BubbleChart.prototype.removeSelectFromNode = function () {
     })
         .classed(graph.consts.selectedClass, false)
         .each(function (d, i) {
-            graph.insertTitleLinebreaks(d3.select(this), d.label);
+            graph.insertTitleLinebreaks(d3.select(this), d.label, getFontSizeForNode(d));
         })
     ;
     graph.outerCircles.filter(function (cd) {
         return cd.id === graph.state.selectedNode.id;
     })
         .each(function (d, i) {
-            d3.select(this).select('circle').attr("r", getSizeForNode(d) + 5);
+            d3.select(this).select('circle').attr("r", getSizeForNode(d) + 8);
         })
     ;
     graph.plusButtons.filter(function (cd) {
@@ -373,7 +373,7 @@ BubbleChart.prototype.updateBubbleSize = function (d) {
     })
         .select('circle')
         .attr("r", function (d) {
-            return getSizeForNode(d) + 20;
+            return getSizeForNode(d) + 15;
         });
     graph.onBubbleSizeChangeListener.forEach((func) => {
         func(d);
@@ -430,7 +430,7 @@ BubbleChart.prototype.changeTextOfNode = function (d3node, d) {
         })
         .on("blur", function (d) {
             d.label = this.textContent;
-            graph.insertTitleLinebreaks(d3node, d.label);
+            graph.insertTitleLinebreaks(d3node, d.label, getFontSizeForNode(d));
             d3.select(this.parentElement).remove();
         });
     return d3txt;
@@ -586,40 +586,53 @@ BubbleChart.prototype.svgKeyUp = function () {
 
 function getSizeForNode(d) {
     if (d.size === 'S') {
-        return 40;
+        return 65;
     } else if (d.size === 'M') {
-        return 60;
+        return 88;
     } else if (d.size === 'L') {
-        return 80;
+        return 125;
     } else {
         return 5;
     }
 }
 
+function getFontSizeForNode(d) {
+    if (d.size === 'S') {
+        return 16;
+    } else if (d.size === 'M') {
+        return 18;
+    } else if (d.size === 'L') {
+        return 36;
+    } else {
+        return 100;  // error
+    }
+}
+
 
 function getColorForNode(d) {
-    if (d.category === undefined || d.category === null) {
-        return '#000000';
-    } else if (d.category === 'PV') {
-        return '#F4FAF3';
-    } else if (d.category === 'SD') {
-        return '#FDF6EF';
-    } else if (d.category === 'HR') {
-        return '#EDF8FE';
-    } else {
-        return '#000000';
-    }
+    return '#FFFFFF';
+    // if (d.category === undefined || d.category === null) {
+    //     return '#000000';
+    // } else if (d.category === 'PV') {  // green
+    //     return '#F4FAF3';
+    // } else if (d.category === 'SD') {  // orange
+    //     return '#FDF6EF';
+    // } else if (d.category === 'HR') {  // blue
+    //     return '#EDF8FE';
+    // } else {
+    //     return '#000000';
+    // }
 }
 
 function getColorForOuterNode(d) {
     if (d.category === undefined || d.category === null) {
         return '#000000';
-    } else if (d.category === 'PV') {
-        return '#57A645';
-    } else if (d.category === 'SD') {
+    } else if (d.category === 'PV') {  // green
+        return '#57A635';
+    } else if (d.category === 'SD') {  // orange
         return '#D36B12';
-    } else if (d.category === 'HR') {
-        return '#087DC3';
+    } else if (d.category === 'HR') {  // blue
+        return '#087DC2';
     } else {
         return '#FFFFFF';
     }
@@ -757,7 +770,7 @@ BubbleChart.prototype.updateGraph = function () {
             d3.select(this)
                 .append("circle")
                 .attr("r", function (d) {
-                    return getSizeForNode(d) + 5;
+                    return getSizeForNode(d) + 8;
                 })
                 .style("fill", function (d) {
                     return getColorForOuterNode(d);
@@ -806,28 +819,28 @@ BubbleChart.prototype.updateGraph = function () {
                     return getColorForNode(d);
                 })
             ;
-            graph.insertTitleLinebreaks(d3.select(this), d.label);
+            graph.insertTitleLinebreaks(d3.select(this), d.label, getFontSizeForNode(d));
         }
     });
 
     graph.plusButtons = graph.buildButtons(
         graph.plusButtons,
-        d => d.x + Math.floor((getSizeForNode(d) + 20) * 0.87),
-        d => d.y + Math.floor((getSizeForNode(d) + 20) / 2),
+        d => d.x - Math.floor((getSizeForNode(d) + 10)),
+        d => d.y,
         '\uf067',
         graph.increaseBubbleSize
     );
     graph.minusButtons = graph.buildButtons(
         graph.minusButtons,
-        d => d.x - Math.floor((getSizeForNode(d) + 20) * 0.87),
-        d => d.y + Math.floor((getSizeForNode(d) + 20) / 2),
+        d => d.x + Math.floor((getSizeForNode(d) + 10)),
+        d => d.y,
         '\uf068',
         graph.decreaseBubbleSize
     );
     graph.trashButtons = graph.buildButtons(
         graph.trashButtons,
         d => d.x,
-        d => d.y - Math.floor((getSizeForNode(d) + 20)),
+        d => d.y + Math.floor((getSizeForNode(d) + 10)),
         '\uf1f8',
         graph.signalDeleteNode
     );
@@ -849,7 +862,7 @@ BubbleChart.prototype.buildButtons = function (graphButtons, xoffset, yoffset, u
             d3.select(this)
                 .append("circle")
                 .attr("r", function (d) {
-                    return 20;
+                    return 18;
                 })
                 .style("fill", function (d) {
                     return getColorForOuterNode(d);
@@ -981,7 +994,7 @@ BubbleChart.prototype.changeBubbleSize = function (id, size) {
     })
         .select('circle')
         .attr("r", function (d) {
-            return getSizeForNode(d) + 20;
+            return getSizeForNode(d) + 15;
         });
 }
 
